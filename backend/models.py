@@ -29,6 +29,5 @@ class ScanBoundingRegion(Base):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     scan_id: Mapped[str] = mapped_column(ForeignKey("scans.scan_id"), index=True)
     primitive_id: Mapped[int] = mapped_column(ForeignKey("primitives.id"), index=True)
-    # Normalized box: {"x_min": 0.0-1.0, "y_min": 0.0-1.0, "x_max": 0.0-1.0, "y_max": 0.0-1.0}
     bounding_region: Mapped[dict] = mapped_column(JSON)
     comment: Mapped[Optional[str]]
