@@ -1,22 +1,3 @@
-# Python
-__pycache__/
-*.py[cod]
-build/
-dist/
-*.egg-info/
-*.egg
-
-# Environments
-.env
-.venv
-venv/
-
-# Test / lint / type-check caches
-.pytest_cache/
-.coverage
-.mypy_cache/
-.ruff_cache/
-
 # Jupyter
 .ipynb_checkpoints
 
@@ -27,11 +8,3 @@ venv/
 
 # OS
 .DS_Store
-
-# Node / frontend
-node_modules/
-dist-ssr/
-
-# Rust / Tauri
-target/
-frontend/src-tauri/gen/

@@ -1,0 +1,8 @@
+[project]
+name = "cxr-labeller-backend"
+version = "0.0.1"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+]

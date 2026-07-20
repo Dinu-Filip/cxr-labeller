@@ -17,6 +17,10 @@
             # JS toolchain
             nodejs_22
 
+            # Python backend toolchain
+            python313
+            uv
+
             # Rust toolchain
             rustc
             cargo
@@ -42,10 +46,12 @@
 
           shellHook = ''
             echo "cxr-labeller dev shell"
-            echo "  node:  $(node --version)"
-            echo "  rustc: $(rustc --version)"
+            echo "  node:   $(node --version)"
+            echo "  rustc:  $(rustc --version)"
+            echo "  python: $(python3 --version)"
             echo
-            echo "cd frontend && npm install && npm run tauri dev"
+            echo "frontend: cd frontend && npm install && npm run tauri dev"
+            echo "backend:  cd backend && uv run fastapi dev main.py"
           '';
         };
       });
