@@ -4,10 +4,38 @@ on:
   push:
     branches: [main]
     paths: ['backend/**']
+  pull_request:
+    paths: ['backend/**']
   workflow_dispatch:
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - run: curl -LsSf https://astral.sh/uv/install.sh | sh
+      - run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - run: uv sync
+      - run: uv run ruff check .
+
+  compile:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - run: curl -LsSf https://astral.sh/uv/install.sh | sh
+      - run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - run: uv sync
+      - run: uv run python -m compileall -q .
+
   build-and-deploy:
+    needs: [lint, compile]
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
       contents: read
