@@ -1,0 +1,14 @@
+name: Deploy frontend
+
+on:
+  push:
+    branches: [main]
+    paths: ['frontend/**']
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Vercel deploy
+        run: curl -fsS -X POST "${{ secrets.CXR_FRONTEND_DEPLOY }}"
