@@ -8,3 +8,6 @@ dependencies = [
     "sqlalchemy",
     "psycopg[binary]",
 ]
+
+[dependency-groups]
+dev = ["ruff"]

@@ -4,7 +4,7 @@ import sys
 from sqlalchemy import URL, create_engine
 
 from db import Base
-import models  # noqa: registers Scan/Primitive/ScanBoundingRegion on Base.metadata
+import models  # registers Scan/Primitive/ScanBoundingRegion on Base.metadata  # noqa: F401
 
 DB_PORT = 5432
 DB_USER = "postgres.hmyivgskkxftasobwwac"
