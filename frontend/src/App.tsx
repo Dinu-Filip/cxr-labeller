@@ -8,7 +8,7 @@ function App() {
     <main className="app">
       <h1>cxr-labeller</h1>
       <button type="button" onClick={() => setCount((c) => c + 1)}>
-        Count = {count}
+        Count: {count}
       </button>
     </main>
   )
