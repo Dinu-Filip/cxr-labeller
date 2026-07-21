@@ -42,31 +42,3 @@ jobs:
           releaseName: cxr-labeller ${{ github.ref_name }}
           releaseDraft: false
           prerelease: false
-
-  release-web:
-    needs: release-desktop
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - name: Build web bundle
-        working-directory: frontend
-        run: |
-          npm install
-          npm run build
-
-      - name: Zip web bundle
-        working-directory: frontend/dist
-        run: zip -r "../../cxr-labeller-web-${{ github.ref_name }}.zip" .
-
-      - name: Attach web bundle to release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ github.ref_name }}
-          files: cxr-labeller-web-${{ github.ref_name }}.zip
