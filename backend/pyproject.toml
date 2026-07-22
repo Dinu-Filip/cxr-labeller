@@ -7,6 +7,9 @@ dependencies = [
     "uvicorn[standard]",
     "sqlalchemy",
     "psycopg[binary]",
+    "pyjwt",
+    "bcrypt",
+    "python-multipart",
 ]
 
 [dependency-groups]

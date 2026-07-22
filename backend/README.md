@@ -4,12 +4,18 @@ FastAPI backend for the labelling tool, using SQLAlchemy models for scans and th
 
 ## Dev
 
+Runs fully locally against a throwaway SQLite database — no network calls to the hosted Supabase instance, safe to reset any time.
+
 ```sh
 uv sync
+set -a && source .env.local && set +a   # DATABASE_URL + SECRET_KEY for local dev
+uv run python create_db.py               # creates ./dev.db and its tables
 uv run fastapi dev main.py
 ```
 
-Serves on `http://127.0.0.1:8000` with auto-reload.
+Serves on `http://127.0.0.1:8000` with auto-reload. Delete `dev.db` and rerun `create_db.py` any time to reset to an empty database.
+
+To instead run against the real Supabase database, `source .env` (production `DB_*` vars + `SECRET_KEY`) before the `create_db.py`/`fastapi dev` steps.
 
 ## Hosting
 
