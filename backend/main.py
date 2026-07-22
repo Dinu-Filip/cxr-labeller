@@ -1,4 +1,5 @@
 from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import Session
@@ -8,6 +9,14 @@ from db import get_db
 from models import User
 
 app = FastAPI(title="cxr-labeller backend")
+
+# Vite dev server (Tauri's webview also loads this URL directly during `tauri dev`)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:1420", "http://127.0.0.1:1420"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/")
