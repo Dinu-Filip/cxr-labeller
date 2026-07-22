@@ -6,10 +6,6 @@ from sqlalchemy import URL, create_engine
 from db import Base
 import models  # registers Scan/Primitive/ScanBoundingRegion on Base.metadata  # noqa: F401
 
-DB_PORT = 5432
-DB_USER = "postgres.hmyivgskkxftasobwwac"
-DB_NAME = "postgres"
-
 def _get_env_var(name: str) -> str:
     var = os.environ.get(name)
     if not var:
@@ -21,14 +17,17 @@ def _get_env_var(name: str) -> str:
 def main() -> None:
     password = _get_env_var("DB_PASSWORD")
     host = _get_env_var("DB_HOST")
+    port = int(_get_env_var("DB_PORT"))
+    user = _get_env_var("DB_USER")
+    name = _get_env_var("DB_NAME")
 
     url = URL.create(
         "postgresql+psycopg",
-        username=DB_USER,
+        username=user,
         password=password,
         host=host,
-        port=DB_PORT,
-        database=DB_NAME,
+        port=port,
+        database=name,
     )
 
     engine = create_engine(url)
