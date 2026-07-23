@@ -4,7 +4,7 @@ import { AuthScreen } from './features/auth/components/AuthScreen'
 import { AnnotationScreen } from './features/annotation/components/AnnotationScreen'
 
 function App() {
-  const { isAuthenticated, logOut } = useAuth()
+  const { isAuthenticated } = useAuth()
 
   if (!isAuthenticated) {
     return <AuthScreen />
@@ -12,11 +12,7 @@ function App() {
 
   return (
     <main className="app">
-      <h1>cxr-labeller</h1>
       <AnnotationScreen />
-      <button type="button" onClick={() => logOut()}>
-        Log out
-      </button>
     </main>
   )
 }
