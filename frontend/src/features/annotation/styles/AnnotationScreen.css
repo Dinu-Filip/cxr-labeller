@@ -30,7 +30,7 @@
 
 .progress-bar-fill {
   height: 100%;
-  background: #2f6fed;
+  background: #1e4fd1;
   transition: width 0.2s ease;
 }
 
@@ -62,8 +62,8 @@
 
 .tool-button.active {
   background: #e8f1ff;
-  border-color: #2f6fed;
-  color: #2f6fed;
+  border-color: #1e4fd1;
+  color: #1e4fd1;
 }
 
 .tool-icon {
@@ -247,12 +247,12 @@
 }
 
 .primitive-row.active .primitive-button {
-  border-color: #2f6fed;
+  border-color: #1e4fd1;
   background: #e8f1ff;
 }
 
 .primitive-row.complete .primitive-button {
-  border-color: #1f9d55;
+  border-color: #157a42;
 }
 
 .primitive-clear {

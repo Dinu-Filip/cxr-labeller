@@ -3,8 +3,8 @@ import type { Point, Primitive, Region, Tool } from '../types/types'
 import { MenuIcon } from './icons'
 
 const CLOSE_VERTEX_RADIUS = 10
-const ACTIVE_COLOR = '#2f6fed'
-const COMPLETE_COLOR = '#1f9d55'
+const ACTIVE_COLOR = '#1e4fd1'
+const COMPLETE_COLOR = '#157a42'
 
 function getCanvasPoint(canvas: HTMLCanvasElement, clientX: number, clientY: number): Point {
   const rect = canvas.getBoundingClientRect()
@@ -92,7 +92,7 @@ export function CanvasViewer({
       }
       if (region.closed) {
         ctx.closePath()
-        ctx.fillStyle = isActive ? 'rgba(47, 111, 237, 0.15)' : 'rgba(31, 157, 85, 0.12)'
+        ctx.fillStyle = isActive ? 'rgba(30, 79, 209, 0.15)' : 'rgba(21, 122, 66, 0.12)'
         ctx.fill()
       } else if (isActive && cursorPoint) {
         ctx.lineTo(cursorPoint.x, cursorPoint.y)
@@ -104,7 +104,7 @@ export function CanvasViewer({
           const isCloseTarget = index === 0 && !region.closed
           ctx.beginPath()
           ctx.arc(point.x, point.y, isCloseTarget ? CLOSE_VERTEX_RADIUS : 4, 0, Math.PI * 2)
-          ctx.fillStyle = isCloseTarget ? 'rgba(47, 111, 237, 0.25)' : color
+          ctx.fillStyle = isCloseTarget ? 'rgba(30, 79, 209, 0.25)' : color
           ctx.fill()
         }
       } else if (region.closed) {
