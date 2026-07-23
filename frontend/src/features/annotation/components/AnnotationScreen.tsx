@@ -43,10 +43,7 @@ export function AnnotationScreen() {
       return
     }
 
-    const selectedRegions = currentScan.regions.filter((r) => selectedRegionIds.includes(r.id))
-    const hasOnlyUnassignedSelection = selectedRegions.length > 0 && selectedRegions.every((r) => r.primitiveId === null)
-
-    if (hasOnlyUnassignedSelection) {
+    if (selectedRegionIds.length > 0) {
       updateCurrentScan((scan) => ({
         ...scan,
         regions: scan.regions.map((r) => (selectedRegionIds.includes(r.id) ? { ...r, primitiveId } : r)),
