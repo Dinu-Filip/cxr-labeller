@@ -117,7 +117,7 @@
 }
 
 .annotation-canvas.tool-move {
-  cursor: grab;
+  cursor: default;
 }
 
 .canvas-menu-button {

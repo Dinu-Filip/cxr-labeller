@@ -60,6 +60,11 @@ function findRegionAtPoint(regions: Region[], point: Point): Region | null {
   return null
 }
 
+const BASE_CURSOR: Record<Tool, string> = {
+  select: 'crosshair',
+  move: 'default',
+}
+
 interface CanvasViewerProps {
   imageSrc: string
   primitives: Primitive[]
@@ -175,6 +180,11 @@ export function CanvasViewer({
     if (imageLoaded) draw()
   }, [imageLoaded, draw])
 
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (canvas) canvas.style.cursor = BASE_CURSOR[activeTool]
+  }, [activeTool])
+
   const handlePointerDown = (event: React.PointerEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current
     if (!canvas || !imageLoaded) return
@@ -240,11 +250,22 @@ export function CanvasViewer({
     if (activeTool === 'select' && editingRegion && editingRegion.points.length > 0) {
       setCursorPoint(point)
     }
+
+    if (!editingRegion) {
+      const hit = findRegionAtPoint(regions, point)
+      canvas.style.cursor = hit ? 'pointer' : BASE_CURSOR[activeTool]
+    }
   }
 
   const handlePointerUp = () => {
     setDraggingRegionId(null)
     setDraggingVertexIndex(null)
+  }
+
+  const handlePointerLeave = () => {
+    handlePointerUp()
+    const canvas = canvasRef.current
+    if (canvas) canvas.style.cursor = BASE_CURSOR[activeTool]
   }
 
   return (
@@ -259,7 +280,7 @@ export function CanvasViewer({
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
-        onPointerLeave={handlePointerUp}
+        onPointerLeave={handlePointerLeave}
       />
     </div>
   )

@@ -1,5 +1,5 @@
 import type { Tool } from '../types/types'
-import { MoveVertexIcon, SelectIcon, TrashIcon } from './icons'
+import { DrawIcon, PointerIcon, TrashIcon } from './icons'
 
 interface ToolbarProps {
   activeTool: Tool
@@ -15,19 +15,19 @@ export function Toolbar({ activeTool, onSelectTool, canDeleteRegion, onDeleteReg
         type="button"
         className={`tool-button ${activeTool === 'select' ? 'active' : ''}`}
         aria-pressed={activeTool === 'select'}
-        title="Select / draw region"
+        title="Draw region"
         onClick={() => onSelectTool('select')}
       >
-        <SelectIcon className="tool-icon" />
+        <DrawIcon className="tool-icon" />
       </button>
       <button
         type="button"
         className={`tool-button ${activeTool === 'move' ? 'active' : ''}`}
         aria-pressed={activeTool === 'move'}
-        title="Move region points"
+        title="Select / move region"
         onClick={() => onSelectTool('move')}
       >
-        <MoveVertexIcon className="tool-icon" />
+        <PointerIcon className="tool-icon" />
       </button>
       <button
         type="button"
