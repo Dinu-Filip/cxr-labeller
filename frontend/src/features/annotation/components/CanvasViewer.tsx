@@ -64,8 +64,6 @@ export function CanvasViewer({
   const [cursorPoint, setCursorPoint] = useState<Point | null>(null)
   const [draggingVertexIndex, setDraggingVertexIndex] = useState<number | null>(null)
 
-  const activeRegion = activePrimitiveId !== null ? regionsByPrimitiveId[activePrimitiveId] : undefined
-
   const draw = useCallback(() => {
     const canvas = canvasRef.current
     const image = imageRef.current
@@ -206,9 +204,6 @@ export function CanvasViewer({
 
       {activePrimitiveId === null && (
         <div className="canvas-hint">Select a primitive on the right to begin labelling.</div>
-      )}
-      {activeRegion === undefined && activePrimitiveId !== null && (
-        <div className="canvas-hint">Click on the scan to place vertices for this region.</div>
       )}
     </div>
   )

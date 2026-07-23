@@ -4,7 +4,7 @@
   align-items: center;
   gap: 1rem;
   width: 100%;
-  max-width: 960px;
+  max-width: 1200px;
   margin: 0 auto;
   color: #1f2937;
 }
@@ -82,7 +82,7 @@
 
 .canvas-column {
   position: relative;
-  flex: 1;
+  flex: 1 1 65%;
   min-width: 0;
 }
 
@@ -93,8 +93,10 @@
 }
 
 .annotation-canvas {
+  width: 100%;
   max-width: 100%;
   height: auto;
+  max-height: 65vh;
   border: 1px solid #d7dbe1;
   border-radius: 4px;
   touch-action: none;
@@ -222,8 +224,8 @@
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
-  width: 200px;
-  flex-shrink: 0;
+  flex: 1 1 35%;
+  min-width: 0;
 }
 
 .primitive-row {
