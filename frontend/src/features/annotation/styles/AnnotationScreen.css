@@ -66,6 +66,15 @@
   color: #1e4fd1;
 }
 
+.tool-button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.tool-button-delete {
+  margin-left: 0.5rem;
+}
+
 .tool-icon {
   width: 18px;
   height: 18px;
@@ -253,23 +262,6 @@
 
 .primitive-row.complete .primitive-button {
   border-color: #157a42;
-}
-
-.primitive-clear {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  border: 1px solid #d7dbe1;
-  border-radius: 6px;
-  background: #ffffff;
-  color: #4b5563;
-  cursor: pointer;
-}
-
-.primitive-clear-icon {
-  width: 12px;
-  height: 12px;
 }
 
 /* Navigation controls */

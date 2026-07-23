@@ -5,6 +5,7 @@ import { MenuIcon } from './icons'
 const CLOSE_VERTEX_RADIUS = 10
 const ACTIVE_COLOR = '#1e4fd1'
 const COMPLETE_COLOR = '#157a42'
+const UNASSIGNED_COLOR = '#6b7280'
 
 function getCanvasPoint(canvas: HTMLCanvasElement, clientX: number, clientY: number): Point {
   const rect = canvas.getBoundingClientRect()
@@ -38,23 +39,48 @@ function findNearestVertex(points: Point[], target: Point): number | null {
   return closestIndex
 }
 
+function isPointInPolygon(point: Point, polygon: Point[]): boolean {
+  let inside = false
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    const xi = polygon[i].x
+    const yi = polygon[i].y
+    const xj = polygon[j].x
+    const yj = polygon[j].y
+    const intersect = yi > point.y !== yj > point.y && point.x < ((xj - xi) * (point.y - yi)) / (yj - yi) + xi
+    if (intersect) inside = !inside
+  }
+  return inside
+}
+
+function findRegionAtPoint(regions: Region[], point: Point): Region | null {
+  for (let i = regions.length - 1; i >= 0; i--) {
+    const region = regions[i]
+    if (region.closed && isPointInPolygon(point, region.points)) return region
+  }
+  return null
+}
+
 interface CanvasViewerProps {
   imageSrc: string
   primitives: Primitive[]
-  regionsByPrimitiveId: Record<number, Region>
+  regions: Region[]
+  selectedRegionId: string | null
   activePrimitiveId: number | null
   activeTool: Tool
-  onRegionChange: (primitiveId: number, region: Region) => void
+  onRegionsChange: (regions: Region[]) => void
+  onSelectRegion: (regionId: string | null) => void
   onToggleMetadata: () => void
 }
 
 export function CanvasViewer({
   imageSrc,
   primitives,
-  regionsByPrimitiveId,
+  regions,
+  selectedRegionId,
   activePrimitiveId,
   activeTool,
-  onRegionChange,
+  onRegionsChange,
+  onSelectRegion,
   onToggleMetadata,
 }: CanvasViewerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -75,16 +101,15 @@ export function CanvasViewer({
     ctx.clearRect(0, 0, canvas.width, canvas.height)
     ctx.drawImage(image, 0, 0, canvas.width, canvas.height)
 
-    for (const primitive of primitives) {
-      const region = regionsByPrimitiveId[primitive.id]
-      if (!region || region.points.length === 0) continue
+    for (const region of regions) {
+      if (region.points.length === 0) continue
 
-      const isActive = primitive.id === activePrimitiveId
-      const color = isActive ? ACTIVE_COLOR : COMPLETE_COLOR
+      const isSelected = region.id === selectedRegionId
+      const color = isSelected ? ACTIVE_COLOR : region.primitiveId !== null ? COMPLETE_COLOR : UNASSIGNED_COLOR
 
       ctx.strokeStyle = color
       ctx.lineWidth = 2
-      ctx.setLineDash(isActive && !region.closed ? [6, 4] : [])
+      ctx.setLineDash(isSelected && !region.closed ? [6, 4] : [])
       ctx.beginPath()
       ctx.moveTo(region.points[0].x, region.points[0].y)
       for (const point of region.points.slice(1)) {
@@ -92,14 +117,14 @@ export function CanvasViewer({
       }
       if (region.closed) {
         ctx.closePath()
-        ctx.fillStyle = isActive ? 'rgba(30, 79, 209, 0.15)' : 'rgba(21, 122, 66, 0.12)'
+        ctx.fillStyle = isSelected ? 'rgba(30, 79, 209, 0.15)' : 'rgba(21, 122, 66, 0.12)'
         ctx.fill()
-      } else if (isActive && cursorPoint) {
+      } else if (isSelected && cursorPoint) {
         ctx.lineTo(cursorPoint.x, cursorPoint.y)
       }
       ctx.stroke()
 
-      if (isActive) {
+      if (isSelected) {
         for (const [index, point] of region.points.entries()) {
           const isCloseTarget = index === 0 && !region.closed
           ctx.beginPath()
@@ -107,10 +132,13 @@ export function CanvasViewer({
           ctx.fillStyle = isCloseTarget ? 'rgba(30, 79, 209, 0.25)' : color
           ctx.fill()
         }
-      } else if (region.closed) {
+      }
+
+      if (region.closed) {
         const center = centroid(region.points)
+        const primitive = primitives.find((p) => p.id === region.primitiveId)
+        const label = primitive?.name ?? 'Unlabelled'
         ctx.font = '13px sans-serif'
-        const label = primitive.name
         const padding = 4
         const metrics = ctx.measureText(label)
         ctx.fillStyle = 'rgba(15, 20, 26, 0.75)'
@@ -121,7 +149,7 @@ export function CanvasViewer({
         ctx.fillText(label, center.x, center.y)
       }
     }
-  }, [primitives, regionsByPrimitiveId, activePrimitiveId, cursorPoint])
+  }, [primitives, regions, selectedRegionId, cursorPoint])
 
   useEffect(() => {
     setImageLoaded(false)
@@ -147,38 +175,62 @@ export function CanvasViewer({
 
   const handlePointerDown = (event: React.PointerEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current
-    if (!canvas || !imageLoaded || activePrimitiveId === null) return
+    if (!canvas || !imageLoaded) return
     const point = getCanvasPoint(canvas, event.clientX, event.clientY)
-    const region = regionsByPrimitiveId[activePrimitiveId] ?? { points: [], closed: false }
+    const selectedRegion = regions.find((r) => r.id === selectedRegionId) ?? null
 
     if (activeTool === 'move') {
-      if (!region.closed) return
-      const nearestIndex = findNearestVertex(region.points, point)
-      setDraggingVertexIndex(nearestIndex)
+      if (selectedRegion?.closed) {
+        const nearestIndex = findNearestVertex(selectedRegion.points, point)
+        if (nearestIndex !== null) {
+          setDraggingVertexIndex(nearestIndex)
+          return
+        }
+      }
+      const hit = findRegionAtPoint(regions, point)
+      onSelectRegion(hit ? hit.id : null)
       return
     }
 
-    if (region.closed) return
-    if (region.points.length >= 3 && distance(point, region.points[0]) <= CLOSE_VERTEX_RADIUS) {
-      onRegionChange(activePrimitiveId, { ...region, closed: true })
-    } else {
-      onRegionChange(activePrimitiveId, { ...region, points: [...region.points, point] })
+    if (selectedRegion && !selectedRegion.closed) {
+      if (selectedRegion.points.length >= 3 && distance(point, selectedRegion.points[0]) <= CLOSE_VERTEX_RADIUS) {
+        onRegionsChange(regions.map((r) => (r.id === selectedRegion.id ? { ...r, closed: true } : r)))
+      } else {
+        onRegionsChange(regions.map((r) => (r.id === selectedRegion.id ? { ...r, points: [...r.points, point] } : r)))
+      }
+      return
     }
+
+    const hit = findRegionAtPoint(regions, point)
+    if (hit) {
+      onSelectRegion(hit.id)
+      return
+    }
+
+    const newRegion: Region = {
+      id: crypto.randomUUID(),
+      primitiveId: activePrimitiveId,
+      points: [point],
+      closed: false,
+    }
+    setCursorPoint(null)
+    onRegionsChange([...regions, newRegion])
+    onSelectRegion(newRegion.id)
   }
 
   const handlePointerMove = (event: React.PointerEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current
-    if (!canvas || activePrimitiveId === null) return
+    if (!canvas) return
     const point = getCanvasPoint(canvas, event.clientX, event.clientY)
-    const region = regionsByPrimitiveId[activePrimitiveId]
+    const selectedRegion = regions.find((r) => r.id === selectedRegionId) ?? null
 
-    if (activeTool === 'move' && draggingVertexIndex !== null && region) {
-      const points = region.points.map((p, index) => (index === draggingVertexIndex ? point : p))
-      onRegionChange(activePrimitiveId, { ...region, points })
+    if (activeTool === 'move' && draggingVertexIndex !== null && selectedRegion) {
+      const points = selectedRegion.points.map((p, index) => (index === draggingVertexIndex ? point : p))
+      onRegionsChange(regions.map((r) => (r.id === selectedRegion.id ? { ...r, points } : r)))
       return
     }
 
-    if (activeTool === 'select' && region && !region.closed && region.points.length > 0) {
+    if (activeTool === 'select' && selectedRegion && !selectedRegion.closed && selectedRegion.points.length > 0) {
       setCursorPoint(point)
     }
   }
@@ -201,10 +253,6 @@ export function CanvasViewer({
         onPointerUp={handlePointerUp}
         onPointerLeave={handlePointerUp}
       />
-
-      {activePrimitiveId === null && (
-        <div className="canvas-hint">Select a primitive on the right to begin labelling.</div>
-      )}
     </div>
   )
 }

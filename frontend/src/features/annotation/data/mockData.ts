@@ -19,6 +19,6 @@ export const MOCK_SCANS: ScanRecord[] = Array.from({ length: SCAN_COUNT }, (_, i
     },
     imageSrc: `/scans/scan_${number}.png`,
     comment: '',
-    regionsByPrimitiveId: {},
+    regions: [],
   }
 })

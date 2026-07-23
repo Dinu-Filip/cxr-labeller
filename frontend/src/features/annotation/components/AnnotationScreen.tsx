@@ -10,7 +10,7 @@ import { ScanMetadataPanel } from './ScanMetadataPanel'
 import { Toolbar } from './Toolbar'
 
 function isScanComplete(scan: ScanRecord) {
-  return PRIMITIVES.every((primitive) => scan.regionsByPrimitiveId[primitive.id]?.closed)
+  return PRIMITIVES.every((primitive) => scan.regions.some((region) => region.primitiveId === primitive.id && region.closed))
 }
 
 export function AnnotationScreen() {
@@ -18,6 +18,7 @@ export function AnnotationScreen() {
   const [currentScanIndex, setCurrentScanIndex] = useState(0)
   const [activeTool, setActiveTool] = useState<Tool>('select')
   const [activePrimitiveId, setActivePrimitiveId] = useState<number | null>(null)
+  const [selectedRegionId, setSelectedRegionId] = useState<string | null>(null)
   const [metadataOpen, setMetadataOpen] = useState(false)
 
   const currentScan = scans[currentScanIndex]
@@ -31,19 +32,34 @@ export function AnnotationScreen() {
     setScans((prev) => prev.map((scan, index) => (index === currentScanIndex ? updater(scan) : scan)))
   }
 
-  const handleRegionChange = (primitiveId: number, region: Region) => {
-    updateCurrentScan((scan) => ({
-      ...scan,
-      regionsByPrimitiveId: { ...scan.regionsByPrimitiveId, [primitiveId]: region },
-    }))
+  const handleRegionsChange = (regions: Region[]) => {
+    updateCurrentScan((scan) => ({ ...scan, regions }))
   }
 
-  const handleClearPrimitive = (primitiveId: number) => {
-    updateCurrentScan((scan) => {
-      const regionsByPrimitiveId = { ...scan.regionsByPrimitiveId }
-      delete regionsByPrimitiveId[primitiveId]
-      return { ...scan, regionsByPrimitiveId }
-    })
+  const handleSelectPrimitive = (primitiveId: number) => {
+    const selectedRegion = currentScan.regions.find((r) => r.id === selectedRegionId)
+
+    if (selectedRegion && selectedRegion.primitiveId === null) {
+      updateCurrentScan((scan) => ({
+        ...scan,
+        regions: scan.regions.map((r) => (r.id === selectedRegion.id ? { ...r, primitiveId } : r)),
+      }))
+      setActivePrimitiveId(primitiveId)
+      return
+    }
+
+    setActivePrimitiveId(primitiveId)
+    const regionsForPrimitive = currentScan.regions.filter((r) => r.primitiveId === primitiveId)
+    setSelectedRegionId(regionsForPrimitive.length > 0 ? regionsForPrimitive[regionsForPrimitive.length - 1].id : null)
+  }
+
+  const handleDeleteSelectedRegion = () => {
+    if (selectedRegionId === null) return
+    updateCurrentScan((scan) => ({
+      ...scan,
+      regions: scan.regions.filter((region) => region.id !== selectedRegionId),
+    }))
+    setSelectedRegionId(null)
   }
 
   const handleCommentChange = (comment: string) => {
@@ -52,6 +68,7 @@ export function AnnotationScreen() {
 
   const goToScan = (index: number) => {
     setCurrentScanIndex(index)
+    setSelectedRegionId(null)
     setMetadataOpen(false)
   }
 
@@ -59,17 +76,24 @@ export function AnnotationScreen() {
     <div className="annotation-screen">
       <ProgressBar percent={coveragePercent} />
 
-      <Toolbar activeTool={activeTool} onSelectTool={setActiveTool} />
+      <Toolbar
+        activeTool={activeTool}
+        onSelectTool={setActiveTool}
+        canDeleteRegion={selectedRegionId !== null}
+        onDeleteRegion={handleDeleteSelectedRegion}
+      />
 
       <div className="annotation-main">
         <div className="canvas-column">
           <CanvasViewer
             imageSrc={currentScan.imageSrc}
             primitives={PRIMITIVES}
-            regionsByPrimitiveId={currentScan.regionsByPrimitiveId}
+            regions={currentScan.regions}
+            selectedRegionId={selectedRegionId}
             activePrimitiveId={activePrimitiveId}
             activeTool={activeTool}
-            onRegionChange={handleRegionChange}
+            onRegionsChange={handleRegionsChange}
+            onSelectRegion={setSelectedRegionId}
             onToggleMetadata={() => setMetadataOpen((open) => !open)}
           />
           {metadataOpen && (
@@ -85,9 +109,8 @@ export function AnnotationScreen() {
         <PrimitivesPanel
           primitives={PRIMITIVES}
           activePrimitiveId={activePrimitiveId}
-          regionsByPrimitiveId={currentScan.regionsByPrimitiveId}
-          onSelectPrimitive={setActivePrimitiveId}
-          onClearPrimitive={handleClearPrimitive}
+          regions={currentScan.regions}
+          onSelectPrimitive={handleSelectPrimitive}
         />
       </div>
 

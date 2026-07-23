@@ -4,6 +4,8 @@ export interface Point {
 }
 
 export interface Region {
+  id: string
+  primitiveId: number | null
   points: Point[]
   closed: boolean
 }
@@ -24,7 +26,7 @@ export interface ScanRecord {
   metadata: ScanMetadata
   imageSrc: string
   comment: string
-  regionsByPrimitiveId: Record<number, Region>
+  regions: Region[]
 }
 
 export type Tool = 'select' | 'move'
