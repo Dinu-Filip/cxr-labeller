@@ -18,7 +18,7 @@ export function AnnotationScreen() {
   const [currentScanIndex, setCurrentScanIndex] = useState(0)
   const [activeTool, setActiveTool] = useState<Tool>('select')
   const [activePrimitiveId, setActivePrimitiveId] = useState<number | null>(null)
-  const [selectedRegionId, setSelectedRegionId] = useState<string | null>(null)
+  const [selectedRegionIds, setSelectedRegionIds] = useState<string[]>([])
   const [metadataOpen, setMetadataOpen] = useState(false)
 
   const currentScan = scans[currentScanIndex]
@@ -39,16 +39,17 @@ export function AnnotationScreen() {
   const handleSelectPrimitive = (primitiveId: number) => {
     if (primitiveId === activePrimitiveId) {
       setActivePrimitiveId(null)
-      setSelectedRegionId(null)
+      setSelectedRegionIds([])
       return
     }
 
-    const selectedRegion = currentScan.regions.find((r) => r.id === selectedRegionId)
+    const selectedRegions = currentScan.regions.filter((r) => selectedRegionIds.includes(r.id))
+    const hasOnlyUnassignedSelection = selectedRegions.length > 0 && selectedRegions.every((r) => r.primitiveId === null)
 
-    if (selectedRegion && selectedRegion.primitiveId === null) {
+    if (hasOnlyUnassignedSelection) {
       updateCurrentScan((scan) => ({
         ...scan,
-        regions: scan.regions.map((r) => (r.id === selectedRegion.id ? { ...r, primitiveId } : r)),
+        regions: scan.regions.map((r) => (selectedRegionIds.includes(r.id) ? { ...r, primitiveId } : r)),
       }))
       setActivePrimitiveId(primitiveId)
       return
@@ -56,16 +57,16 @@ export function AnnotationScreen() {
 
     setActivePrimitiveId(primitiveId)
     const regionsForPrimitive = currentScan.regions.filter((r) => r.primitiveId === primitiveId)
-    setSelectedRegionId(regionsForPrimitive.length > 0 ? regionsForPrimitive[regionsForPrimitive.length - 1].id : null)
+    setSelectedRegionIds(regionsForPrimitive.map((r) => r.id))
   }
 
-  const handleDeleteSelectedRegion = () => {
-    if (selectedRegionId === null) return
+  const handleDeleteSelectedRegions = () => {
+    if (selectedRegionIds.length === 0) return
     updateCurrentScan((scan) => ({
       ...scan,
-      regions: scan.regions.filter((region) => region.id !== selectedRegionId),
+      regions: scan.regions.filter((region) => !selectedRegionIds.includes(region.id)),
     }))
-    setSelectedRegionId(null)
+    setSelectedRegionIds([])
   }
 
   const handleCommentChange = (comment: string) => {
@@ -74,7 +75,7 @@ export function AnnotationScreen() {
 
   const goToScan = (index: number) => {
     setCurrentScanIndex(index)
-    setSelectedRegionId(null)
+    setSelectedRegionIds([])
     setMetadataOpen(false)
   }
 
@@ -85,8 +86,8 @@ export function AnnotationScreen() {
       <Toolbar
         activeTool={activeTool}
         onSelectTool={setActiveTool}
-        canDeleteRegion={selectedRegionId !== null}
-        onDeleteRegion={handleDeleteSelectedRegion}
+        canDeleteRegion={selectedRegionIds.length > 0}
+        onDeleteRegion={handleDeleteSelectedRegions}
       />
 
       <div className="annotation-main">
@@ -95,11 +96,11 @@ export function AnnotationScreen() {
             imageSrc={currentScan.imageSrc}
             primitives={PRIMITIVES}
             regions={currentScan.regions}
-            selectedRegionId={selectedRegionId}
+            selectedRegionIds={selectedRegionIds}
             activePrimitiveId={activePrimitiveId}
             activeTool={activeTool}
             onRegionsChange={handleRegionsChange}
-            onSelectRegion={setSelectedRegionId}
+            onSelectRegions={setSelectedRegionIds}
             onToggleMetadata={() => setMetadataOpen((open) => !open)}
           />
           {metadataOpen && (

@@ -64,11 +64,11 @@ interface CanvasViewerProps {
   imageSrc: string
   primitives: Primitive[]
   regions: Region[]
-  selectedRegionId: string | null
+  selectedRegionIds: string[]
   activePrimitiveId: number | null
   activeTool: Tool
   onRegionsChange: (regions: Region[]) => void
-  onSelectRegion: (regionId: string | null) => void
+  onSelectRegions: (regionIds: string[]) => void
   onToggleMetadata: () => void
 }
 
@@ -76,11 +76,11 @@ export function CanvasViewer({
   imageSrc,
   primitives,
   regions,
-  selectedRegionId,
+  selectedRegionIds,
   activePrimitiveId,
   activeTool,
   onRegionsChange,
-  onSelectRegion,
+  onSelectRegions,
   onToggleMetadata,
 }: CanvasViewerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -88,6 +88,7 @@ export function CanvasViewer({
 
   const [imageLoaded, setImageLoaded] = useState(false)
   const [cursorPoint, setCursorPoint] = useState<Point | null>(null)
+  const [draggingRegionId, setDraggingRegionId] = useState<string | null>(null)
   const [draggingVertexIndex, setDraggingVertexIndex] = useState<number | null>(null)
 
   const draw = useCallback(() => {
@@ -104,7 +105,7 @@ export function CanvasViewer({
     for (const region of regions) {
       if (region.points.length === 0) continue
 
-      const isSelected = region.id === selectedRegionId
+      const isSelected = selectedRegionIds.includes(region.id)
       const color = isSelected ? ACTIVE_COLOR : region.primitiveId !== null ? COMPLETE_COLOR : UNASSIGNED_COLOR
 
       ctx.strokeStyle = color
@@ -149,11 +150,12 @@ export function CanvasViewer({
         ctx.fillText(label, center.x, center.y)
       }
     }
-  }, [primitives, regions, selectedRegionId, cursorPoint])
+  }, [primitives, regions, selectedRegionIds, cursorPoint])
 
   useEffect(() => {
     setImageLoaded(false)
     setCursorPoint(null)
+    setDraggingRegionId(null)
     setDraggingVertexIndex(null)
 
     const image = new Image()
@@ -177,33 +179,35 @@ export function CanvasViewer({
     const canvas = canvasRef.current
     if (!canvas || !imageLoaded) return
     const point = getCanvasPoint(canvas, event.clientX, event.clientY)
-    const selectedRegion = regions.find((r) => r.id === selectedRegionId) ?? null
+    const editingRegion = regions.find((r) => selectedRegionIds.includes(r.id) && !r.closed) ?? null
 
     if (activeTool === 'move') {
-      if (selectedRegion?.closed) {
-        const nearestIndex = findNearestVertex(selectedRegion.points, point)
+      const selectedClosedRegions = regions.filter((r) => selectedRegionIds.includes(r.id) && r.closed)
+      for (const region of selectedClosedRegions) {
+        const nearestIndex = findNearestVertex(region.points, point)
         if (nearestIndex !== null) {
+          setDraggingRegionId(region.id)
           setDraggingVertexIndex(nearestIndex)
           return
         }
       }
       const hit = findRegionAtPoint(regions, point)
-      onSelectRegion(hit ? hit.id : null)
+      onSelectRegions(hit ? [hit.id] : [])
       return
     }
 
-    if (selectedRegion && !selectedRegion.closed) {
-      if (selectedRegion.points.length >= 3 && distance(point, selectedRegion.points[0]) <= CLOSE_VERTEX_RADIUS) {
-        onRegionsChange(regions.map((r) => (r.id === selectedRegion.id ? { ...r, closed: true } : r)))
+    if (editingRegion) {
+      if (editingRegion.points.length >= 3 && distance(point, editingRegion.points[0]) <= CLOSE_VERTEX_RADIUS) {
+        onRegionsChange(regions.map((r) => (r.id === editingRegion.id ? { ...r, closed: true } : r)))
       } else {
-        onRegionsChange(regions.map((r) => (r.id === selectedRegion.id ? { ...r, points: [...r.points, point] } : r)))
+        onRegionsChange(regions.map((r) => (r.id === editingRegion.id ? { ...r, points: [...r.points, point] } : r)))
       }
       return
     }
 
     const hit = findRegionAtPoint(regions, point)
     if (hit) {
-      onSelectRegion(hit.id)
+      onSelectRegions([hit.id])
       return
     }
 
@@ -215,27 +219,31 @@ export function CanvasViewer({
     }
     setCursorPoint(null)
     onRegionsChange([...regions, newRegion])
-    onSelectRegion(newRegion.id)
+    onSelectRegions([newRegion.id])
   }
 
   const handlePointerMove = (event: React.PointerEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current
     if (!canvas) return
     const point = getCanvasPoint(canvas, event.clientX, event.clientY)
-    const selectedRegion = regions.find((r) => r.id === selectedRegionId) ?? null
 
-    if (activeTool === 'move' && draggingVertexIndex !== null && selectedRegion) {
-      const points = selectedRegion.points.map((p, index) => (index === draggingVertexIndex ? point : p))
-      onRegionsChange(regions.map((r) => (r.id === selectedRegion.id ? { ...r, points } : r)))
+    if (activeTool === 'move' && draggingRegionId !== null && draggingVertexIndex !== null) {
+      const region = regions.find((r) => r.id === draggingRegionId)
+      if (region) {
+        const points = region.points.map((p, index) => (index === draggingVertexIndex ? point : p))
+        onRegionsChange(regions.map((r) => (r.id === draggingRegionId ? { ...r, points } : r)))
+      }
       return
     }
 
-    if (activeTool === 'select' && selectedRegion && !selectedRegion.closed && selectedRegion.points.length > 0) {
+    const editingRegion = regions.find((r) => selectedRegionIds.includes(r.id) && !r.closed) ?? null
+    if (activeTool === 'select' && editingRegion && editingRegion.points.length > 0) {
       setCursorPoint(point)
     }
   }
 
   const handlePointerUp = () => {
+    setDraggingRegionId(null)
     setDraggingVertexIndex(null)
   }
 
