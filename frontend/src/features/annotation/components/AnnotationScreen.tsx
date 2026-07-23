@@ -1,144 +1,102 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
-import dummyScan from '../../../assets/dummy-scan.svg'
+import { useMemo, useState } from 'react'
 import '../styles/AnnotationScreen.css'
-import type { Point, Region } from '../types/types'
+import { MOCK_SCANS, PRIMITIVES } from '../data/mockData'
+import type { Region, ScanRecord, Tool } from '../types/types'
+import { CanvasViewer } from './CanvasViewer'
+import { NavigationControls } from './NavigationControls'
+import { PrimitivesPanel } from './PrimitivesPanel'
+import { ProgressBar } from './ProgressBar'
+import { ScanMetadataPanel } from './ScanMetadataPanel'
+import { Toolbar } from './Toolbar'
 
-const CLOSE_VERTEX_RADIUS = 10
-
-function getCanvasPoint(canvas: HTMLCanvasElement, clientX: number, clientY: number): Point {
-  const rect = canvas.getBoundingClientRect()
-  const scaleX = canvas.width / rect.width
-  const scaleY = canvas.height / rect.height
-  return {
-    x: (clientX - rect.left) * scaleX,
-    y: (clientY - rect.top) * scaleY,
-  }
-}
-
-function distance(a: Point, b: Point) {
-  return Math.hypot(a.x - b.x, a.y - b.y)
+function isScanComplete(scan: ScanRecord) {
+  return PRIMITIVES.every((primitive) => scan.regionsByPrimitiveId[primitive.id]?.closed)
 }
 
 export function AnnotationScreen() {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const imageRef = useRef<HTMLImageElement | null>(null)
+  const [scans, setScans] = useState<ScanRecord[]>(MOCK_SCANS)
+  const [currentScanIndex, setCurrentScanIndex] = useState(0)
+  const [activeTool, setActiveTool] = useState<Tool>('select')
+  const [activePrimitiveId, setActivePrimitiveId] = useState<number | null>(null)
+  const [metadataOpen, setMetadataOpen] = useState(false)
 
-  const [imageLoaded, setImageLoaded] = useState(false)
-  const [region, setRegion] = useState<Region>({ points: [], closed: false })
-  const [cursorPoint, setCursorPoint] = useState<Point | null>(null)
+  const currentScan = scans[currentScanIndex]
 
-  const draw = useCallback((currentRegion: Region, hoverPoint: Point | null) => {
-    const canvas = canvasRef.current
-    const image = imageRef.current
-    if (!canvas || !image) return
+  const coveragePercent = useMemo(() => {
+    const completeCount = scans.filter(isScanComplete).length
+    return (completeCount / scans.length) * 100
+  }, [scans])
 
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
+  const updateCurrentScan = (updater: (scan: ScanRecord) => ScanRecord) => {
+    setScans((prev) => prev.map((scan, index) => (index === currentScanIndex ? updater(scan) : scan)))
+  }
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
-    ctx.drawImage(image, 0, 0, canvas.width, canvas.height)
+  const handleRegionChange = (primitiveId: number, region: Region) => {
+    updateCurrentScan((scan) => ({
+      ...scan,
+      regionsByPrimitiveId: { ...scan.regionsByPrimitiveId, [primitiveId]: region },
+    }))
+  }
 
-    const { points, closed } = currentRegion
-    if (points.length === 0) return
-
-    ctx.strokeStyle = '#4da3ff'
-    ctx.lineWidth = 2
-    ctx.setLineDash([])
-    ctx.beginPath()
-    ctx.moveTo(points[0].x, points[0].y)
-    for (const point of points.slice(1)) {
-      ctx.lineTo(point.x, point.y)
-    }
-    if (closed) {
-      ctx.closePath()
-      ctx.fillStyle = 'rgba(77, 163, 255, 0.15)'
-      ctx.fill()
-    } else if (hoverPoint) {
-      ctx.lineTo(hoverPoint.x, hoverPoint.y)
-    }
-    ctx.stroke()
-
-    for (const [index, point] of points.entries()) {
-      ctx.beginPath()
-      ctx.arc(point.x, point.y, index === 0 && !closed ? CLOSE_VERTEX_RADIUS : 4, 0, Math.PI * 2)
-      ctx.fillStyle = index === 0 && !closed ? 'rgba(77, 163, 255, 0.25)' : '#4da3ff'
-      ctx.fill()
-    }
-  }, [])
-
-  useEffect(() => {
-    const image = new Image()
-    image.src = dummyScan
-    image.onload = () => {
-      imageRef.current = image
-      const canvas = canvasRef.current
-      if (canvas) {
-        canvas.width = image.naturalWidth
-        canvas.height = image.naturalHeight
-      }
-      setImageLoaded(true)
-    }
-  }, [])
-
-  useEffect(() => {
-    if (imageLoaded) draw(region, cursorPoint)
-  }, [imageLoaded, region, cursorPoint, draw])
-
-  const handlePointerDown = (event: React.PointerEvent<HTMLCanvasElement>) => {
-    const canvas = canvasRef.current
-    if (!canvas || !imageLoaded || region.closed) return
-    const point = getCanvasPoint(canvas, event.clientX, event.clientY)
-
-    setRegion((prev) => {
-      if (prev.points.length >= 3 && distance(point, prev.points[0]) <= CLOSE_VERTEX_RADIUS) {
-        return { ...prev, closed: true }
-      }
-      return { ...prev, points: [...prev.points, point] }
+  const handleClearPrimitive = (primitiveId: number) => {
+    updateCurrentScan((scan) => {
+      const regionsByPrimitiveId = { ...scan.regionsByPrimitiveId }
+      delete regionsByPrimitiveId[primitiveId]
+      return { ...scan, regionsByPrimitiveId }
     })
   }
 
-  const handlePointerMove = (event: React.PointerEvent<HTMLCanvasElement>) => {
-    const canvas = canvasRef.current
-    if (!canvas || region.closed || region.points.length === 0) return
-    setCursorPoint(getCanvasPoint(canvas, event.clientX, event.clientY))
+  const handleCommentChange = (comment: string) => {
+    updateCurrentScan((scan) => ({ ...scan, comment }))
   }
 
-  const handleClear = () => {
-    setRegion({ points: [], closed: false })
-    setCursorPoint(null)
-  }
-
-  const statusText = () => {
-    if (region.points.length === 0) {
-      return 'No region drawn yet — click on the scan to place vertices.'
-    }
-    if (!region.closed) {
-      return `Placing polygon: ${region.points.length} point(s) — click the first (highlighted) point to close the shape.`
-    }
-    return `Polygon region: ${region.points.length} points — ${region.points
-      .map((p) => `(${Math.round(p.x)}, ${Math.round(p.y)})`)
-      .join(', ')}`
+  const goToScan = (index: number) => {
+    setCurrentScanIndex(index)
+    setMetadataOpen(false)
   }
 
   return (
     <div className="annotation-screen">
-      <div className="annotation-toolbar">
-        <span className="annotation-tool-label">Tool: Draw polygon region</span>
-        <button type="button" onClick={handleClear} disabled={region.points.length === 0}>
-          Clear region
-        </button>
-      </div>
+      <ProgressBar percent={coveragePercent} />
 
-      <div className="annotation-canvas-wrapper">
-        <canvas
-          ref={canvasRef}
-          className="annotation-canvas"
-          onPointerDown={handlePointerDown}
-          onPointerMove={handlePointerMove}
+      <Toolbar activeTool={activeTool} onSelectTool={setActiveTool} />
+
+      <div className="annotation-main">
+        <div className="canvas-column">
+          <CanvasViewer
+            imageSrc={currentScan.imageSrc}
+            primitives={PRIMITIVES}
+            regionsByPrimitiveId={currentScan.regionsByPrimitiveId}
+            activePrimitiveId={activePrimitiveId}
+            activeTool={activeTool}
+            onRegionChange={handleRegionChange}
+            onToggleMetadata={() => setMetadataOpen((open) => !open)}
+          />
+          {metadataOpen && (
+            <ScanMetadataPanel
+              metadata={currentScan.metadata}
+              comment={currentScan.comment}
+              onCommentChange={handleCommentChange}
+              onClose={() => setMetadataOpen(false)}
+            />
+          )}
+        </div>
+
+        <PrimitivesPanel
+          primitives={PRIMITIVES}
+          activePrimitiveId={activePrimitiveId}
+          regionsByPrimitiveId={currentScan.regionsByPrimitiveId}
+          onSelectPrimitive={setActivePrimitiveId}
+          onClearPrimitive={handleClearPrimitive}
         />
       </div>
 
-      <div className="annotation-status">{statusText()}</div>
+      <NavigationControls
+        onPrev={() => goToScan(currentScanIndex - 1)}
+        onNext={() => goToScan(currentScanIndex + 1)}
+        canPrev={currentScanIndex > 0}
+        canNext={currentScanIndex < scans.length - 1}
+      />
     </div>
   )
 }
