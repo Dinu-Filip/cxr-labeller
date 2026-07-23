@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="42%" r="65%">
+      <stop offset="0%" stop-color="#1a1f26" />
+      <stop offset="100%" stop-color="#05070a" />
+    </radialGradient>
+    <linearGradient id="lung" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#3a4552" stop-opacity="0.85" />
+      <stop offset="100%" stop-color="#232a32" stop-opacity="0.85" />
+    </linearGradient>
+  </defs>
+
+  <rect width="512" height="512" fill="url(#bg)" />
+
+  <!-- shoulders -->
+  <path d="M40,120 Q120,60 200,90 L200,150 Q120,130 60,180 Z" fill="#2b323b" opacity="0.7" />
+  <path d="M472,120 Q392,60 312,90 L312,150 Q392,130 452,180 Z" fill="#2b323b" opacity="0.7" />
+
+  <!-- lungs -->
+  <path d="M150,150 C90,180 80,300 120,380 C150,430 190,420 200,360 C210,300 210,190 180,150 Z" fill="url(#lung)" />
+  <path d="M362,150 C422,180 432,300 392,380 C362,430 322,420 312,360 C302,300 302,190 332,150 Z" fill="url(#lung)" />
+
+  <!-- ribs -->
+  <g stroke="#8b95a1" stroke-width="3" fill="none" opacity="0.55">
+    <path d="M100,170 Q256,140 412,170" />
+    <path d="M95,205 Q256,175 417,205" />
+    <path d="M92,240 Q256,210 420,240" />
+    <path d="M92,275 Q256,248 420,275" />
+    <path d="M95,310 Q256,285 417,310" />
+    <path d="M100,345 Q256,322 412,345" />
+    <path d="M108,378 Q256,358 404,378" />
+  </g>
+
+  <!-- spine -->
+  <rect x="246" y="90" width="20" height="360" rx="8" fill="#c7cdd4" opacity="0.5" />
+  <g stroke="#05070a" stroke-width="2" opacity="0.6">
+    <line x1="246" y1="115" x2="266" y2="115" />
+    <line x1="246" y1="145" x2="266" y2="145" />
+    <line x1="246" y1="175" x2="266" y2="175" />
+    <line x1="246" y1="205" x2="266" y2="205" />
+    <line x1="246" y1="235" x2="266" y2="235" />
+    <line x1="246" y1="265" x2="266" y2="265" />
+    <line x1="246" y1="295" x2="266" y2="295" />
+    <line x1="246" y1="325" x2="266" y2="325" />
+    <line x1="246" y1="355" x2="266" y2="355" />
+    <line x1="246" y1="385" x2="266" y2="385" />
+    <line x1="246" y1="415" x2="266" y2="415" />
+  </g>
+
+  <!-- heart shadow -->
+  <ellipse cx="230" cy="330" rx="70" ry="85" fill="#12161b" opacity="0.55" />
+
+  <!-- clavicles -->
+  <path d="M170,110 Q220,95 250,110" stroke="#c7cdd4" stroke-width="6" fill="none" opacity="0.5" />
+  <path d="M342,110 Q292,95 262,110" stroke="#c7cdd4" stroke-width="6" fill="none" opacity="0.5" />
+
+  <text x="256" y="495" text-anchor="middle" font-family="monospace" font-size="14" fill="#5b6672">
+    DUMMY SCAN — FOR LAYOUT PURPOSES ONLY
+  </text>
+</svg>

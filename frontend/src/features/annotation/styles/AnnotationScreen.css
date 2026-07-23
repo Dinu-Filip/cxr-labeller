@@ -1,0 +1,39 @@
+.annotation-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.annotation-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.annotation-tool-label {
+  font-weight: 600;
+  opacity: 0.8;
+}
+
+.annotation-canvas-wrapper {
+  display: flex;
+  justify-content: center;
+  max-width: 100%;
+}
+
+.annotation-canvas {
+  max-width: 100%;
+  height: auto;
+  border: 1px solid #3a4552;
+  border-radius: 4px;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.annotation-status {
+  font-family: monospace;
+  font-size: 0.85rem;
+  opacity: 0.75;
+}
