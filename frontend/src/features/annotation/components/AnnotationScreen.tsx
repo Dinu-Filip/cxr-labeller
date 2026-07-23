@@ -37,6 +37,12 @@ export function AnnotationScreen() {
   }
 
   const handleSelectPrimitive = (primitiveId: number) => {
+    if (primitiveId === activePrimitiveId) {
+      setActivePrimitiveId(null)
+      setSelectedRegionId(null)
+      return
+    }
+
     const selectedRegion = currentScan.regions.find((r) => r.id === selectedRegionId)
 
     if (selectedRegion && selectedRegion.primitiveId === null) {
