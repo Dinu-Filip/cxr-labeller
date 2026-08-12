@@ -1,0 +1,137 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.prompt {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.9375rem;
+  font-weight: 500;
+}
+
+.options {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  width: 100%;
+}
+
+.option {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-btn);
+  box-shadow: var(--shadow-btn);
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    transform var(--dur-fast) var(--ease),
+    background-color var(--dur-fast) var(--ease),
+    border-color var(--dur-fast) var(--ease),
+    color var(--dur-fast) var(--ease);
+}
+
+.option::before {
+  content: '';
+  width: 10px;
+  height: 10px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: var(--tint);
+}
+
+.option:hover:not(:disabled) {
+  background: var(--surface-hover);
+  border-color: var(--tint);
+}
+
+.option:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.option:disabled {
+  cursor: default;
+}
+
+.selected,
+.selected:hover:not(:disabled) {
+  background: var(--tint);
+  border-color: var(--tint);
+  color: var(--sim-fg);
+}
+
+.selected::before {
+  background: var(--sim-fg);
+}
+
+/* Unpicked options recede while the pick commits. */
+.option:disabled:not(.selected) {
+  opacity: 0.45;
+}
+
+.committing {
+  animation: pulse var(--dur-med) var(--ease);
+}
+
+@keyframes pulse {
+  40% {
+    transform: scale(1.06);
+  }
+}
+
+.hotkey {
+  display: grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 5px;
+  border-radius: 6px;
+  background: color-mix(in srgb, currentColor 12%, transparent);
+  border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.clear {
+  --tint: var(--sim-clear);
+}
+
+.moderate {
+  --tint: var(--sim-moderate);
+}
+
+.weak {
+  --tint: var(--sim-weak);
+}
+
+.none {
+  --tint: var(--sim-none);
+}
+
+@media (min-width: 40rem) {
+  .options {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .option {
+    flex-direction: column;
+    gap: 8px;
+    padding: 18px 12px;
+    text-align: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .committing {
+    animation: none;
+  }
+}

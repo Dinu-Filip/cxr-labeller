@@ -1,0 +1,113 @@
+.arena {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+}
+
+.versus {
+  align-self: center;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-btn);
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  animation: popIn var(--dur-med) var(--ease) both;
+}
+
+.card {
+  animation-duration: var(--dur-med);
+  animation-timing-function: var(--ease);
+  animation-fill-mode: both;
+}
+
+.cardA {
+  animation-name: enterLeft;
+}
+
+.cardB {
+  animation-name: enterRight;
+  animation-delay: 40ms;
+}
+
+.exiting .cardA {
+  animation-name: exitLeft;
+  animation-delay: 0ms;
+}
+
+.exiting .cardB {
+  animation-name: exitRight;
+  animation-delay: 0ms;
+}
+
+.exiting .versus {
+  animation-name: popOut;
+}
+
+@keyframes enterLeft {
+  from {
+    opacity: 0;
+    transform: translate3d(-28px, 0, 0) scale(0.97);
+  }
+}
+
+@keyframes enterRight {
+  from {
+    opacity: 0;
+    transform: translate3d(28px, 0, 0) scale(0.97);
+  }
+}
+
+@keyframes exitLeft {
+  to {
+    opacity: 0;
+    transform: translate3d(-44px, 0, 0) scale(0.94);
+  }
+}
+
+@keyframes exitRight {
+  to {
+    opacity: 0;
+    transform: translate3d(44px, 0, 0) scale(0.94);
+  }
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+
+@keyframes popOut {
+  to {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+
+@media (min-width: 40rem) {
+  .arena {
+    flex-direction: row;
+    align-items: center;
+    gap: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .versus,
+  .exiting .card,
+  .exiting .versus {
+    animation: none;
+  }
+}

@@ -1,0 +1,61 @@
+:root {
+  color-scheme: light dark;
+
+  --font-sans: system-ui, 'Segoe UI', Roboto, sans-serif;
+
+  --bg: hsl(210 30% 97%);
+  --bg-accent: hsl(200 40% 92%);
+  --surface: hsl(0 0% 100%);
+  --surface-hover: hsl(210 30% 98%);
+  --border: hsl(214 20% 87%);
+  --text: hsl(215 30% 16%);
+  --text-muted: hsl(215 14% 46%);
+  --focus: hsl(215 90% 52%);
+
+  /* Ordinal ramp: saturated (most similar) to neutral (not similar). */
+  --sim-clear: hsl(174 72% 28%);
+  --sim-moderate: hsl(174 52% 38%);
+  --sim-weak: hsl(174 33% 52%);
+  --sim-none: hsl(215 12% 58%);
+  --sim-fg: hsl(0 0% 100%);
+
+  --radius-card: 20px;
+  --radius-btn: 14px;
+  --shadow-card: 0 1px 2px hsl(215 30% 16% / 0.06), 0 12px 28px hsl(215 30% 16% / 0.08);
+  --shadow-btn: 0 1px 2px hsl(215 30% 16% / 0.1);
+
+  --dur-fast: 120ms;
+  --dur-med: 260ms;
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  --measure: 60rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: hsl(215 28% 10%);
+    --bg-accent: hsl(215 30% 14%);
+    --surface: hsl(215 24% 15%);
+    --surface-hover: hsl(215 24% 18%);
+    --border: hsl(215 18% 26%);
+    --text: hsl(210 30% 94%);
+    --text-muted: hsl(215 14% 66%);
+    --focus: hsl(210 90% 66%);
+
+    --sim-clear: hsl(174 62% 42%);
+    --sim-moderate: hsl(174 44% 36%);
+    --sim-weak: hsl(174 26% 32%);
+    --sim-none: hsl(215 14% 32%);
+    --sim-fg: hsl(0 0% 100%);
+
+    --shadow-card: 0 1px 2px hsl(0 0% 0% / 0.3), 0 12px 28px hsl(0 0% 0% / 0.35);
+    --shadow-btn: 0 1px 2px hsl(0 0% 0% / 0.3);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast: 1ms;
+    --dur-med: 1ms;
+  }
+}

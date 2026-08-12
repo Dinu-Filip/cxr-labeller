@@ -1,0 +1,32 @@
+.undo {
+  align-self: center;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius-btn);
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    color var(--dur-fast) var(--ease),
+    border-color var(--dur-fast) var(--ease);
+}
+
+.undo:hover:not(:disabled) {
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.undo:disabled {
+  opacity: 0;
+  cursor: default;
+  pointer-events: none;
+}
+
+.target {
+  font-weight: 600;
+}
