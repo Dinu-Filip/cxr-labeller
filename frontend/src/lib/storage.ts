@@ -17,9 +17,9 @@ function isJudgement(value: unknown): value is Judgement {
 }
 
 /**
- * Restores the judgements that still line up with the current queue, stopping at
- * the first entry that does not — a reordered or regenerated queue keeps only
- * the prefix it agrees with rather than silently misattributing ratings.
+ * Restores judgements for pairs still present in the queue, keeping the stored
+ * order (oldest rating first) so undo pops the most recent one. Entries for
+ * pairs the queue no longer contains, and duplicates, are dropped.
  */
 export function loadJudgements(pairs: Pair[]): Judgement[] {
   let raw: string | null = null
@@ -38,10 +38,14 @@ export function loadJudgements(pairs: Pair[]): Judgement[] {
   }
   if (!Array.isArray(parsed)) return []
 
+  const queued = new Set(pairs.map((pair) => pair.id))
+  const seen = new Set<string>()
   const restored: Judgement[] = []
-  for (const [index, entry] of parsed.entries()) {
-    const pair = pairs[index]
-    if (!pair || !isJudgement(entry) || entry.pairId !== pair.id) break
+
+  for (const entry of parsed) {
+    if (!isJudgement(entry)) continue
+    if (!queued.has(entry.pairId) || seen.has(entry.pairId)) continue
+    seen.add(entry.pairId)
     restored.push(entry)
   }
   return restored

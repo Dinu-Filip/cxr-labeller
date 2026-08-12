@@ -2,18 +2,56 @@
   display: flex;
   gap: 4px;
   width: 100%;
-  height: 8px;
 }
 
+/* The button is a tall transparent hit target around a short visual bar. */
 .segment {
   flex: 1 1 0;
-  border-radius: 999px;
-  background: var(--border);
-  transition: background-color var(--dur-med) var(--ease);
+  min-width: 8px;
+  height: 22px;
+  padding: 7px 0;
+  background: none;
+  border: 0;
+  border-radius: 4px;
+  cursor: pointer;
 }
 
-.segmentDone {
-  background: var(--sim-clear);
+.segment:disabled {
+  cursor: default;
+}
+
+.fill {
+  display: block;
+  height: 8px;
+  border-radius: 999px;
+  /* Kept translucent so even the lowest rung of the ramp ("Not at all", a
+     muted grey) still reads as filled against an unrated segment. */
+  background: color-mix(in srgb, var(--border) 50%, transparent);
+  transition:
+    background-color var(--dur-med) var(--ease),
+    height var(--dur-fast) var(--ease),
+    margin var(--dur-fast) var(--ease);
+}
+
+.segment:hover:not(:disabled) .fill {
+  background: var(--text-muted);
+}
+
+.rated .fill {
+  background: var(--tint);
+}
+
+.rated:hover:not(:disabled) .fill {
+  background: var(--tint);
+}
+
+.current .fill {
+  height: 14px;
+  margin: -3px 0;
+}
+
+.current:not(.rated) .fill {
+  background: var(--text-muted);
 }
 
 .bar {
@@ -24,9 +62,25 @@
   overflow: hidden;
 }
 
-.fill {
+.barFill {
   height: 100%;
   border-radius: 999px;
   background: var(--sim-clear);
   transition: width var(--dur-med) var(--ease);
+}
+
+.clear {
+  --tint: var(--sim-clear);
+}
+
+.moderate {
+  --tint: var(--sim-moderate);
+}
+
+.weak {
+  --tint: var(--sim-weak);
+}
+
+.none {
+  --tint: var(--sim-none);
 }

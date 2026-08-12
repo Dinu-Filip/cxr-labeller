@@ -1,33 +1,64 @@
+import { SIMILARITY_OPTIONS } from '../data/similarityLevels.ts'
+import type { Pair, SimilarityLevel } from '../types.ts'
 import styles from './ProgressTrack.module.css'
 
 type Props = {
-  done: number
-  total: number
+  pairs: Pair[]
+  levelByPairId: Map<string, SimilarityLevel>
+  cursor: number
+  disabled: boolean
+  onSelect: (index: number) => void
 }
 
-/** Beyond this many pairs, individual segments get too thin to read. */
-const MAX_SEGMENTS = 20
+/** Beyond this many pairs, segments get too thin to be a usable hit target. */
+const MAX_SEGMENTS = 40
 
-export function ProgressTrack({ done, total }: Props) {
-  const label = `${done} of ${total} pairs rated`
+const LABELS = new Map(
+  SIMILARITY_OPTIONS.map((option) => [option.level, option.label]),
+)
 
-  if (total > MAX_SEGMENTS) {
-    const percent = total === 0 ? 0 : (done / total) * 100
+export function ProgressTrack({
+  pairs,
+  levelByPairId,
+  cursor,
+  disabled,
+  onSelect,
+}: Props) {
+  const done = levelByPairId.size
+  const label = `${done} of ${pairs.length} pairs rated`
+
+  if (pairs.length > MAX_SEGMENTS) {
+    const percent = pairs.length === 0 ? 0 : (done / pairs.length) * 100
     return (
       <div className={styles.bar} role="img" aria-label={label}>
-        <div className={styles.fill} style={{ width: `${percent}%` }} />
+        <div className={styles.barFill} style={{ width: `${percent}%` }} />
       </div>
     )
   }
 
   return (
-    <div className={styles.track} role="img" aria-label={label}>
-      {Array.from({ length: total }, (_, index) => (
-        <span
-          key={index}
-          className={`${styles.segment} ${index < done ? styles.segmentDone : ''}`}
-        />
-      ))}
+    <div className={styles.track} role="group" aria-label="Jump to pair">
+      {pairs.map((pair, index) => {
+        const level = levelByPairId.get(pair.id)
+        const status = level
+          ? `rated ${LABELS.get(level)?.toLowerCase()}`
+          : 'not yet rated'
+        return (
+          <button
+            key={pair.id}
+            type="button"
+            className={`${styles.segment} ${level ? `${styles.rated} ${styles[level]}` : ''} ${
+              index === cursor ? styles.current : ''
+            }`}
+            aria-label={`Pair ${index + 1}, ${pair.a.name} versus ${pair.b.name}, ${status}`}
+            aria-current={index === cursor ? 'true' : undefined}
+            disabled={disabled}
+            onClick={() => onSelect(index)}
+          >
+            <span className={styles.fill} />
+          </button>
+        )
+      })}
     </div>
   )
 }

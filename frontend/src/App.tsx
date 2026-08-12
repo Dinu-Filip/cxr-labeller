@@ -28,7 +28,7 @@ function App() {
     }
   }, [])
 
-  const { current, rate, undo } = session
+  const { current, rate, undo, goTo } = session
 
   const handleSelect = useCallback(
     (level: SimilarityLevel) => {
@@ -51,6 +51,14 @@ function App() {
     undo()
   }, [undo])
 
+  const handleJump = useCallback(
+    (index: number) => {
+      if (timer.current !== null) return
+      goTo(index)
+    },
+    [goTo],
+  )
+
   const hotkeys = useMemo(() => {
     const bindings: Record<string, () => void> = { Backspace: handleUndo }
     for (const option of SIMILARITY_OPTIONS) {
@@ -66,7 +74,13 @@ function App() {
       <header className={styles.header}>
         <p className={styles.wordmark}>cxr-labeller</p>
         <div className={styles.progress}>
-          <ProgressTrack done={session.done} total={session.total} />
+          <ProgressTrack
+            pairs={MOCK_PAIRS}
+            levelByPairId={session.levelByPairId}
+            cursor={session.cursor}
+            disabled={committing !== null}
+            onSelect={handleJump}
+          />
         </div>
         <p className={styles.session} aria-live="polite">
           {session.done} / {session.total}
@@ -82,7 +96,7 @@ function App() {
               exiting={committing !== null}
             />
             <SimilarityScale
-              selected={committing}
+              selected={committing ?? session.currentLevel}
               disabled={committing !== null}
               onSelect={handleSelect}
             />
