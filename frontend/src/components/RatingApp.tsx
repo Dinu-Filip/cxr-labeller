@@ -101,10 +101,14 @@ export function RatingApp({ reviewer, pairs, session, sync, onExit }: Props) {
 
   return (
     <div className={styles.app}>
+      <button type="button" className={styles.exit} onClick={onExit}>
+        <span className={styles.exitGlyph} aria-hidden="true">
+          ‹
+        </span>
+        Menu
+      </button>
+
       <header className={styles.header}>
-        <button type="button" className={styles.exit} onClick={onExit}>
-          <span aria-hidden="true">‹</span> Menu
-        </button>
         <p className={styles.wordmark}>{reviewer.name}</p>
         <div className={styles.progress}>
           <ProgressTrack

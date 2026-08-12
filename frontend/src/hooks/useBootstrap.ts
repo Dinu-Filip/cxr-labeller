@@ -10,7 +10,10 @@ export type Bootstrap =
       status: 'ready'
       reviewer: Reviewer
       primitives: Primitive[]
+      /** Heatmap reading order: the lower triangle, row by row. */
       pairs: Pair[]
+      /** The server's coverage-first, per-reviewer order. */
+      shuffledPairs: Pair[]
       judgements: Judgement[]
     }
 
@@ -24,13 +27,19 @@ function pairFromId(
   return a && b ? { id: pairId, a, b } : null
 }
 
-/** Every unordered combination, canonically ordered, in stable id order. */
-function allCombinations(primitives: Primitive[]): Pair[] {
+/**
+ * Every combination in the order the heatmap reads: down the rows of the lower
+ * triangle, left to right. Rating in this order walks the matrix visibly rather
+ * than hopping around it.
+ */
+function matrixOrder(primitives: Primitive[]): Pair[] {
   const sorted = [...primitives].sort((a, b) => a.id - b.id)
   const pairs: Pair[] = []
-  for (let i = 0; i < sorted.length; i++) {
-    for (let j = i + 1; j < sorted.length; j++) {
-      pairs.push({ id: `${sorted[i].id}-${sorted[j].id}`, a: sorted[i], b: sorted[j] })
+  for (let row = 1; row < sorted.length; row++) {
+    for (let column = 0; column < row; column++) {
+      const a = sorted[column]
+      const b = sorted[row]
+      pairs.push({ id: `${a.id}-${b.id}`, a, b })
     }
   }
   return pairs
@@ -82,18 +91,26 @@ export function useBootstrap(
             pairs.push(pair)
           }
         }
-        for (const pair of allCombinations(primitives)) {
+        for (const pair of matrixOrder(primitives)) {
           if (!seen.has(pair.id)) {
             seen.add(pair.id)
             pairs.push(pair)
           }
         }
 
+        // `pairs` above is the server's ordering; the matrix ordering reuses the
+        // same Pair objects so either list works with the same lookups.
+        const byPairId = new Map(pairs.map((pair) => [pair.id, pair]))
+        const ordered = matrixOrder(primitives).map(
+          (pair) => byPairId.get(pair.id) ?? pair,
+        )
+
         setState({
           status: 'ready',
           reviewer,
           primitives,
-          pairs,
+          pairs: ordered,
+          shuffledPairs: pairs,
           judgements: ratings.filter((judgement) => seen.has(judgement.pairId)),
         })
       } catch (error) {

@@ -40,6 +40,7 @@ function Session({
       reviewer={bootstrap.reviewer}
       primitives={bootstrap.primitives}
       pairs={bootstrap.pairs}
+      shuffledPairs={bootstrap.shuffledPairs}
       judgements={bootstrap.judgements}
       onUnauthorized={onUnauthorized}
     />

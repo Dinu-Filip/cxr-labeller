@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from 'react'
 import type { ApiClient, Reviewer } from '../api/client.ts'
 import { useRatingSession } from '../hooks/useRatingSession.ts'
 import { useSyncQueue } from '../hooks/useSyncQueue.ts'
+import { loadShuffle, saveShuffle } from '../lib/preferences.ts'
 import type { Judgement, Pair, Primitive } from '../types.ts'
 import { Menu } from './Menu.tsx'
 import { RatingApp } from './RatingApp.tsx'
@@ -11,6 +12,7 @@ type Props = {
   reviewer: Reviewer
   primitives: Primitive[]
   pairs: Pair[]
+  shuffledPairs: Pair[]
   judgements: Judgement[]
   onUnauthorized: () => void
 }
@@ -26,17 +28,26 @@ export function Workspace({
   reviewer,
   primitives,
   pairs,
+  shuffledPairs,
   judgements,
   onUnauthorized,
 }: Props) {
-  const session = useRatingSession(pairs, judgements)
+  const [shuffle, setShuffle] = useState(loadShuffle)
+  const ordered = shuffle ? shuffledPairs : pairs
+
+  const session = useRatingSession(ordered, judgements)
   const sync = useSyncQueue(client, onUnauthorized)
   const [view, setView] = useState<View>('menu')
 
   const indexByPairId = useMemo(
-    () => new Map(pairs.map((pair, index) => [pair.id, index])),
-    [pairs],
+    () => new Map(ordered.map((pair, index) => [pair.id, index])),
+    [ordered],
   )
+
+  const handleShuffle = useCallback((next: boolean) => {
+    saveShuffle(next)
+    setShuffle(next)
+  }, [])
 
   const { goTo, goToFrontier } = session
 
@@ -61,6 +72,8 @@ export function Workspace({
         session={session}
         sync={sync}
         indexByPairId={indexByPairId}
+        shuffle={shuffle}
+        onShuffleChange={handleShuffle}
         onStart={handleStart}
         onSelectPair={handleSelectPair}
       />
@@ -70,7 +83,7 @@ export function Workspace({
   return (
     <RatingApp
       reviewer={reviewer}
-      pairs={pairs}
+      pairs={ordered}
       session={session}
       sync={sync}
       onExit={() => setView('menu')}

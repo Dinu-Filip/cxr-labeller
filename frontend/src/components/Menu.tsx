@@ -5,6 +5,7 @@ import type { Primitive } from '../types.ts'
 import { Doughnut } from './Doughnut.tsx'
 import { Heatmap } from './Heatmap.tsx'
 import { SyncIndicator } from './SyncIndicator.tsx'
+import { Toggle } from './Toggle.tsx'
 import styles from './Menu.module.css'
 
 type Props = {
@@ -13,6 +14,8 @@ type Props = {
   session: RatingSession
   sync: SyncQueue
   indexByPairId: Map<string, number>
+  shuffle: boolean
+  onShuffleChange: (shuffle: boolean) => void
   onStart: () => void
   onSelectPair: (index: number) => void
 }
@@ -23,6 +26,8 @@ export function Menu({
   session,
   sync,
   indexByPairId,
+  shuffle,
+  onShuffleChange,
   onStart,
   onSelectPair,
 }: Props) {
@@ -56,6 +61,14 @@ export function Menu({
           <button type="button" className={styles.start} onClick={onStart}>
             {startLabel} →
           </button>
+
+          <div className={styles.controls}>
+            <Toggle
+              checked={shuffle}
+              label={shuffle ? 'Shuffle on' : 'Shuffle off'}
+              onChange={onShuffleChange}
+            />
+          </div>
         </section>
 
         <section className={styles.section}>

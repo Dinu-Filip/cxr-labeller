@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { Judgement, Pair, SimilarityLevel } from '../types.ts'
 
 export type RatingSession = {
@@ -62,6 +62,27 @@ export function useRatingSession(
     judgements: initialJudgements,
     cursor: nextUnrated(pairs, ratedIds(initialJudgements), 0),
   }))
+
+  // Reordering the queue (the shuffle toggle) keeps you on the pair you were
+  // looking at rather than snapping elsewhere. Judgements are keyed by pair id,
+  // so only the cursor — an index — needs remapping.
+  const previousPairs = useRef(pairs)
+  useEffect(() => {
+    const before = previousPairs.current
+    if (before === pairs) return
+    previousPairs.current = pairs
+    setState((prev) => {
+      const anchor = before[prev.cursor]?.id
+      const index = anchor ? pairs.findIndex((pair) => pair.id === anchor) : -1
+      return {
+        ...prev,
+        cursor:
+          index >= 0
+            ? index
+            : nextUnrated(pairs, ratedIds(prev.judgements), 0),
+      }
+    })
+  }, [pairs])
 
   const rate = useCallback(
     (level: SimilarityLevel) => {
