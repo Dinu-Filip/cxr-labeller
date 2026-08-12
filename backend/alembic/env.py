@@ -1,14 +1,19 @@
 from logging.config import fileConfig
 
 from alembic import context
-from sqlalchemy import engine_from_config, pool
+from sqlalchemy import create_engine, pool
 
 from config import database_url
 from db import Base
 import models  # noqa: F401  registers the tables on Base.metadata
 
 config = context.config
-config.set_main_option("sqlalchemy.url", database_url())
+
+# The URL deliberately does not go through config.set_main_option(): that writes
+# into alembic.ini's configparser, whose interpolation reads "%" as an escape, so
+# a percent-encoded character in the password (%21 for "!") aborts the migration
+# with "invalid interpolation syntax". Handing the URL straight to create_engine
+# skips the ini layer and the escaping question with it.
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
@@ -18,7 +23,7 @@ target_metadata = Base.metadata
 
 def run_migrations_offline() -> None:
     context.configure(
-        url=config.get_main_option("sqlalchemy.url"),
+        url=database_url(),
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
@@ -28,11 +33,7 @@ def run_migrations_offline() -> None:
 
 
 def run_migrations_online() -> None:
-    connectable = engine_from_config(
-        config.get_section(config.config_ini_section, {}),
-        prefix="sqlalchemy.",
-        poolclass=pool.NullPool,
-    )
+    connectable = create_engine(database_url(), poolclass=pool.NullPool)
     with connectable.connect() as connection:
         context.configure(
             connection=connection,

@@ -2,7 +2,9 @@ __pycache__/
 *.py[cod]
 
 .venv/
-.env
+# Every variant, not just .env: .env.local held a tracked placeholder for a
+# while and is the file that collects real values next.
+.env*
 
 .pytest_cache/
 .coverage
