@@ -45,7 +45,7 @@ export function RatingApp({
     }
   }, [])
 
-  const { current, rate, clearCurrent, step } = session
+  const { current, rate, clearCurrent, goTo, step } = session
   const { enqueue } = sync
 
   const handleSelect = useCallback(
@@ -72,6 +72,14 @@ export function RatingApp({
     clearCurrent()
     enqueue(current.id, null)
   }, [clearCurrent, current, enqueue, session.currentLevel])
+
+  const handleJump = useCallback(
+    (index: number) => {
+      if (timer.current !== null) return
+      goTo(index)
+    },
+    [goTo],
+  )
 
   const handleStep = useCallback(
     (delta: number) => {
@@ -100,7 +108,13 @@ export function RatingApp({
       <header className={styles.header}>
         <p className={styles.wordmark}>{reviewer.name}</p>
         <div className={styles.progress}>
-          <ProgressTrack done={session.done} total={session.total} />
+          <ProgressTrack
+            pairs={pairs}
+            levelByPairId={session.levelByPairId}
+            cursor={session.cursor}
+            disabled={committing !== null}
+            onSelect={handleJump}
+          />
         </div>
         <p className={styles.session} aria-live="polite">
           {session.done} / {session.total}

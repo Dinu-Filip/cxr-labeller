@@ -8,11 +8,13 @@ export type RatingSession = {
   currentLevel: SimilarityLevel | null
   cursor: number
   judgements: Judgement[]
+  levelByPairId: Map<string, SimilarityLevel>
   done: number
   total: number
   rate: (level: SimilarityLevel) => void
   /** Drops the rating on the pair under the cursor, leaving the cursor put. */
   clearCurrent: () => void
+  goTo: (index: number) => void
   step: (delta: number) => void
 }
 
@@ -88,6 +90,15 @@ export function useRatingSession(
     })
   }, [pairs])
 
+  const goTo = useCallback(
+    (index: number) => {
+      setState((prev) =>
+        index >= 0 && index < pairs.length ? { ...prev, cursor: index } : prev,
+      )
+    },
+    [pairs],
+  )
+
   const step = useCallback(
     (delta: number) => {
       setState((prev) => {
@@ -119,10 +130,12 @@ export function useRatingSession(
     currentLevel: current ? (levelByPairId.get(current.id) ?? null) : null,
     cursor: state.cursor,
     judgements: state.judgements,
+    levelByPairId,
     done: state.judgements.length,
     total: pairs.length,
     rate,
     clearCurrent,
+    goTo,
     step,
   }
 }

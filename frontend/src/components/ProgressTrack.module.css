@@ -9,18 +9,51 @@
   display: flex;
   gap: 4px;
   flex: 1 1 auto;
-  height: 8px;
 }
 
+/* The button is a tall transparent hit target around a short visual bar. */
 .segment {
   flex: 1 1 0;
-  border-radius: 999px;
-  background: var(--border);
-  transition: background-color var(--dur-med) var(--ease);
+  min-width: 8px;
+  height: 22px;
+  padding: 7px 0;
+  background: none;
+  border: 0;
+  border-radius: 4px;
+  cursor: pointer;
 }
 
-.segmentDone {
+.segment:disabled {
+  cursor: default;
+}
+
+.fill {
+  display: block;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--border);
+  transition:
+    background-color var(--dur-med) var(--ease),
+    height var(--dur-fast) var(--ease),
+    margin var(--dur-fast) var(--ease);
+}
+
+.segment:hover:not(:disabled) .fill {
+  background: var(--text-muted);
+}
+
+.rated .fill,
+.rated:hover:not(:disabled) .fill {
   background: var(--sim-clear);
+}
+
+.current .fill {
+  height: 14px;
+  margin: -3px 0;
+}
+
+.current:not(.rated) .fill {
+  background: var(--text-muted);
 }
 
 .slide {

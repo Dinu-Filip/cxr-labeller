@@ -1,45 +1,61 @@
 import { useEffect, useState } from 'react'
+import { SIMILARITY_OPTIONS } from '../data/similarityLevels.ts'
+import type { Pair, SimilarityLevel } from '../types.ts'
 import styles from './ProgressTrack.module.css'
 
 type Props = {
-  done: number
-  total: number
+  pairs: Pair[]
+  levelByPairId: Map<string, SimilarityLevel>
+  cursor: number
+  disabled: boolean
+  onSelect: (index: number) => void
 }
 
 /** Segments stay legible up to this many; past it the track slides. */
 const WINDOW = 20
 
+const LABELS = new Map(
+  SIMILARITY_OPTIONS.map((option) => [option.level, option.label.toLowerCase()]),
+)
+
 const clamp = (value: number, min: number, max: number) =>
   Math.min(Math.max(value, min), max)
 
-/** Start of the page holding `frontier`, so following it lands on the same
+/** Start of the page holding `focus`, so following it lands on the same
     boundaries the arrows step between. */
-function pageFor(frontier: number, maxOffset: number): number {
-  return clamp(Math.floor(frontier / WINDOW) * WINDOW, 0, maxOffset)
+function pageFor(focus: number, maxOffset: number): number {
+  return clamp(Math.floor(focus / WINDOW) * WINDOW, 0, maxOffset)
 }
 
-export function ProgressTrack({ done, total }: Props) {
+export function ProgressTrack({
+  pairs,
+  levelByPairId,
+  cursor,
+  disabled,
+  onSelect,
+}: Props) {
+  const total = pairs.length
   const maxOffset = Math.max(0, total - WINDOW)
-  // `done` equals `total` once finished, which is past the last segment.
-  const frontier = Math.min(done, Math.max(total - 1, 0))
-  const [offset, setOffset] = useState(() => pageFor(frontier, maxOffset))
+  // The cursor sits past the last pair once everything is rated.
+  const focus = Math.min(cursor, Math.max(total - 1, 0))
+  const [offset, setOffset] = useState(() => pageFor(focus, maxOffset))
 
-  // Follow the frontier, so rating past the edge of the window does not leave
-  // your progress off-screen. Manual sliding holds while the frontier is still
-  // in view.
+  // Follow the cursor, so navigating past the edge of the window does not
+  // leave it off-screen. Manual sliding holds while the cursor is in view.
   useEffect(() => {
     setOffset((prev) => {
       const base = clamp(prev, 0, maxOffset)
-      const visible = frontier >= base && frontier < base + WINDOW
-      return visible ? base : pageFor(frontier, maxOffset)
+      const visible = focus >= base && focus < base + WINDOW
+      return visible ? base : pageFor(focus, maxOffset)
     })
-  }, [frontier, maxOffset])
+  }, [focus, maxOffset])
 
   const windowed = maxOffset > 0
   const visible = Math.min(WINDOW, total)
+  const done = levelByPairId.size
   const label = windowed
-    ? `${done} of ${total} pairs rated, showing ${offset + 1} to ${offset + visible}`
-    : `${done} of ${total} pairs rated`
+    ? `Jump to pair. ${done} of ${total} rated, showing ${offset + 1} to ${offset + visible}`
+    : `Jump to pair. ${done} of ${total} rated`
 
   return (
     <div className={styles.wrap}>
@@ -55,14 +71,27 @@ export function ProgressTrack({ done, total }: Props) {
         </button>
       ) : null}
 
-      <div className={styles.track} role="img" aria-label={label}>
+      <div className={styles.track} role="group" aria-label={label}>
         {Array.from({ length: visible }, (_, slot) => {
           const index = offset + slot
+          const pair = pairs[index]
+          if (!pair) return null
+          const level = levelByPairId.get(pair.id)
+          const status = level ? `rated ${LABELS.get(level)}` : 'not yet rated'
           return (
-            <span
-              key={index}
-              className={`${styles.segment} ${index < done ? styles.segmentDone : ''}`}
-            />
+            <button
+              key={pair.id}
+              type="button"
+              className={`${styles.segment} ${level ? styles.rated : ''} ${
+                index === cursor ? styles.current : ''
+              }`}
+              aria-label={`Pair ${index + 1}, ${pair.a.name} versus ${pair.b.name}, ${status}`}
+              aria-current={index === cursor ? 'true' : undefined}
+              disabled={disabled}
+              onClick={() => onSelect(index)}
+            >
+              <span className={styles.fill} />
+            </button>
           )
         })}
       </div>

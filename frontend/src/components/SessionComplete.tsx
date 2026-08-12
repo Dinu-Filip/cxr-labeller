@@ -61,7 +61,7 @@ export function SessionComplete({ judgements, onReset }: Props) {
         </button>
       ) : (
         <p className={styles.subtitle}>
-          Use ← to go back and revisit any pair.
+          Use the track above or ← to revisit any pair.
         </p>
       )}
     </section>
