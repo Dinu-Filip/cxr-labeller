@@ -28,7 +28,7 @@ function App() {
     }
   }, [])
 
-  const { current, rate, undo, goTo } = session
+  const { current, rate, undo, goTo, step } = session
 
   const handleSelect = useCallback(
     (level: SimilarityLevel) => {
@@ -59,13 +59,25 @@ function App() {
     [goTo],
   )
 
+  const handleStep = useCallback(
+    (delta: number) => {
+      if (timer.current !== null) return
+      step(delta)
+    },
+    [step],
+  )
+
   const hotkeys = useMemo(() => {
-    const bindings: Record<string, () => void> = { Backspace: handleUndo }
+    const bindings: Record<string, () => void> = {
+      Backspace: handleUndo,
+      ArrowLeft: () => handleStep(-1),
+      ArrowRight: () => handleStep(1),
+    }
     for (const option of SIMILARITY_OPTIONS) {
       bindings[option.hotkey] = () => handleSelect(option.level)
     }
     return bindings
-  }, [handleSelect, handleUndo])
+  }, [handleSelect, handleStep, handleUndo])
 
   useHotkeys(hotkeys)
 

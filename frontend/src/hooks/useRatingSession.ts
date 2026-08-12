@@ -18,6 +18,7 @@ export type RatingSession = {
   undo: () => void
   reset: () => void
   goTo: (index: number) => void
+  step: (delta: number) => void
 }
 
 type SessionState = {
@@ -99,6 +100,22 @@ export function useRatingSession(pairs: Pair[]): RatingSession {
     [pairs],
   )
 
+  const step = useCallback(
+    (delta: number) => {
+      setState((prev) => {
+        // The past-the-end slot is the completion screen, so it is only
+        // reachable once nothing is left unrated.
+        const limit =
+          prev.judgements.length === pairs.length
+            ? pairs.length
+            : pairs.length - 1
+        const next = Math.min(Math.max(prev.cursor + delta, 0), limit)
+        return next === prev.cursor ? prev : { ...prev, cursor: next }
+      })
+    },
+    [pairs],
+  )
+
   const levelByPairId = useMemo(
     () =>
       new Map(
@@ -125,5 +142,6 @@ export function useRatingSession(pairs: Pair[]): RatingSession {
     undo,
     reset,
     goTo,
+    step,
   }
 }
