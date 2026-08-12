@@ -12,11 +12,14 @@
   --text-muted: hsl(215 14% 46%);
   --focus: hsl(215 90% 52%);
 
-  /* Ordinal ramp: saturated (most similar) to neutral (not similar). */
+  /* Diverging ramp: the teal end is similarity, the amber pole is its absence.
+     Amber rather than a deeper grey so "not at all" cannot be mistaken for an
+     unrated segment in the progress track. Teal/amber also survives the common
+     red-green colour vision deficiencies. */
   --sim-clear: hsl(174 72% 28%);
   --sim-moderate: hsl(174 52% 38%);
   --sim-weak: hsl(174 33% 52%);
-  --sim-none: hsl(215 12% 58%);
+  --sim-none: hsl(28 80% 38%);
   --sim-fg: hsl(0 0% 100%);
 
   --radius-card: 20px;
@@ -45,7 +48,7 @@
     --sim-clear: hsl(174 62% 42%);
     --sim-moderate: hsl(174 44% 36%);
     --sim-weak: hsl(174 26% 32%);
-    --sim-none: hsl(215 14% 32%);
+    --sim-none: hsl(30 72% 40%);
     --sim-fg: hsl(0 0% 100%);
 
     --shadow-card: 0 1px 2px hsl(0 0% 0% / 0.3), 0 12px 28px hsl(0 0% 0% / 0.35);
