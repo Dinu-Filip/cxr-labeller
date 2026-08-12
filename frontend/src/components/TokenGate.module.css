@@ -1,0 +1,64 @@
+.wrap {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.panel {
+  width: min(420px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 32px 28px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+
+.title {
+  margin: 0;
+  font-size: 1.375rem;
+  font-weight: 700;
+}
+
+.hint {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.9375rem;
+}
+
+.input {
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-btn);
+  font: inherit;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.875rem;
+}
+
+.submit {
+  padding: 12px 18px;
+  background: var(--sim-clear);
+  color: var(--sim-fg);
+  border: 1px solid var(--sim-clear);
+  border-radius: var(--radius-btn);
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.submit:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.error {
+  margin: 0;
+  color: var(--sim-none);
+  font-size: 0.875rem;
+  font-weight: 600;
+}

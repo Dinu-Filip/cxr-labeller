@@ -11,9 +11,6 @@ export function PrimitiveCard({ primitive, className }: Props) {
   return (
     <article className={`${styles.card} ${className ?? ''}`}>
       <h2 className={styles.name}>{primitive.name}</h2>
-      {primitive.description ? (
-        <p className={styles.description}>{primitive.description}</p>
-      ) : null}
     </article>
   )
 }

@@ -23,14 +23,6 @@
   text-wrap: balance;
 }
 
-.description {
-  margin: 0;
-  max-width: 32ch;
-  color: var(--text-muted);
-  font-size: 0.875rem;
-  text-wrap: pretty;
-}
-
 @media (min-width: 40rem) {
   .card {
     min-height: 168px;

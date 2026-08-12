@@ -4,7 +4,9 @@ import styles from './SessionComplete.module.css'
 
 type Props = {
   judgements: Judgement[]
-  onReset: () => void
+  /** Omitted once ratings live on the server, where a local reset would be a
+      destructive bulk delete rather than clearing a scratch session. */
+  onReset: (() => void) | null
 }
 
 function countByLevel(judgements: Judgement[]): Record<SimilarityLevel, number> {
@@ -53,9 +55,15 @@ export function SessionComplete({ judgements, onReset }: Props) {
         ))}
       </ul>
 
-      <button type="button" className={styles.reset} onClick={onReset}>
-        Start over
-      </button>
+      {onReset ? (
+        <button type="button" className={styles.reset} onClick={onReset}>
+          Start over
+        </button>
+      ) : (
+        <p className={styles.subtitle}>
+          Use ← to go back and revisit any pair.
+        </p>
+      )}
     </section>
   )
 }

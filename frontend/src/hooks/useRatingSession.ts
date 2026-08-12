@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { loadJudgements, saveJudgements } from '../lib/storage.ts'
+import { useCallback, useMemo, useState } from 'react'
 import type { Judgement, Pair, SimilarityLevel } from '../types.ts'
 
 export type RatingSession = {
@@ -9,14 +8,11 @@ export type RatingSession = {
   currentLevel: SimilarityLevel | null
   cursor: number
   judgements: Judgement[]
-  levelByPairId: Map<string, SimilarityLevel>
   done: number
   total: number
   rate: (level: SimilarityLevel) => void
   /** Drops the rating on the pair under the cursor, leaving the cursor put. */
   clearCurrent: () => void
-  reset: () => void
-  goTo: (index: number) => void
   step: (delta: number) => void
 }
 
@@ -44,15 +40,14 @@ function nextUnrated(pairs: Pair[], rated: Set<string>, from: number): number {
 const ratedIds = (judgements: Judgement[]) =>
   new Set(judgements.map((judgement) => judgement.pairId))
 
-export function useRatingSession(pairs: Pair[]): RatingSession {
-  const [state, setState] = useState<SessionState>(() => {
-    const judgements = loadJudgements(pairs)
-    return { judgements, cursor: nextUnrated(pairs, ratedIds(judgements), 0) }
-  })
-
-  useEffect(() => {
-    saveJudgements(state.judgements)
-  }, [state.judgements])
+export function useRatingSession(
+  pairs: Pair[],
+  initialJudgements: Judgement[],
+): RatingSession {
+  const [state, setState] = useState<SessionState>(() => ({
+    judgements: initialJudgements,
+    cursor: nextUnrated(pairs, ratedIds(initialJudgements), 0),
+  }))
 
   const rate = useCallback(
     (level: SimilarityLevel) => {
@@ -93,19 +88,6 @@ export function useRatingSession(pairs: Pair[]): RatingSession {
     })
   }, [pairs])
 
-  const reset = useCallback(() => {
-    setState({ judgements: [], cursor: 0 })
-  }, [])
-
-  const goTo = useCallback(
-    (index: number) => {
-      setState((prev) =>
-        index >= 0 && index < pairs.length ? { ...prev, cursor: index } : prev,
-      )
-    },
-    [pairs],
-  )
-
   const step = useCallback(
     (delta: number) => {
       setState((prev) => {
@@ -137,13 +119,10 @@ export function useRatingSession(pairs: Pair[]): RatingSession {
     currentLevel: current ? (levelByPairId.get(current.id) ?? null) : null,
     cursor: state.cursor,
     judgements: state.judgements,
-    levelByPairId,
     done: state.judgements.length,
     total: pairs.length,
     rate,
     clearCurrent,
-    reset,
-    goTo,
     step,
   }
 }

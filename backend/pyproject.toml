@@ -7,7 +7,13 @@ dependencies = [
     "uvicorn[standard]",
     "sqlalchemy",
     "psycopg[binary]",
+    "alembic",
 ]
 
 [dependency-groups]
-dev = ["ruff"]
+# fastapi-cli provides the `fastapi dev` command; the container runs uvicorn
+# directly and syncs with --no-dev, so it stays out of the runtime image.
+dev = ["ruff", "pytest", "httpx", "fastapi-cli"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

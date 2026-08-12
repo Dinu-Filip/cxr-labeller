@@ -1,131 +1,90 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { ClearButton } from './components/ClearButton.tsx'
-import { ProgressTrack } from './components/ProgressTrack.tsx'
-import { RatingArena } from './components/RatingArena.tsx'
-import { SessionComplete } from './components/SessionComplete.tsx'
-import { SimilarityScale } from './components/SimilarityScale.tsx'
-import { MOCK_PAIRS } from './data/mockPairs.ts'
-import { SIMILARITY_OPTIONS } from './data/similarityLevels.ts'
-import { useHotkeys } from './hooks/useHotkeys.ts'
-import { useRatingSession } from './hooks/useRatingSession.ts'
-import { prefersReducedMotion } from './lib/motion.ts'
-import type { SimilarityLevel } from './types.ts'
+import { useCallback, useMemo, useState } from 'react'
+import { createClient } from './api/client.ts'
+import { RatingApp } from './components/RatingApp.tsx'
+import { TokenGate } from './components/TokenGate.tsx'
+import { useBootstrap } from './hooks/useBootstrap.ts'
+import { clearToken, loadToken, saveToken } from './lib/token.ts'
 import styles from './App.module.css'
 
-/** Time the picked option stays lit and the cards play out before advancing. */
-const COMMIT_MS = 200
+function Session({
+  token,
+  onUnauthorized,
+  onSignOut,
+}: {
+  token: string
+  onUnauthorized: () => void
+  onSignOut: () => void
+}) {
+  const client = useMemo(() => createClient(token), [token])
+  const bootstrap = useBootstrap(client, onUnauthorized)
 
-function App() {
-  const session = useRatingSession(MOCK_PAIRS)
-  // Non-null while a rating is animating out; also locks input so a fast
-  // double-tap cannot rate two pairs with one intent.
-  const [committing, setCommitting] = useState<SimilarityLevel | null>(null)
-  const timer = useRef<number | null>(null)
-
-  useEffect(() => {
-    return () => {
-      if (timer.current !== null) window.clearTimeout(timer.current)
-    }
-  }, [])
-
-  const { current, rate, clearCurrent, goTo, step } = session
-
-  const handleSelect = useCallback(
-    (level: SimilarityLevel) => {
-      if (timer.current !== null || !current) return
-      setCommitting(level)
-      timer.current = window.setTimeout(
-        () => {
-          timer.current = null
-          setCommitting(null)
-          rate(level)
-        },
-        prefersReducedMotion() ? 0 : COMMIT_MS,
-      )
-    },
-    [current, rate],
-  )
-
-  const handleClear = useCallback(() => {
-    if (timer.current !== null) return
-    clearCurrent()
-  }, [clearCurrent])
-
-  const handleJump = useCallback(
-    (index: number) => {
-      if (timer.current !== null) return
-      goTo(index)
-    },
-    [goTo],
-  )
-
-  const handleStep = useCallback(
-    (delta: number) => {
-      if (timer.current !== null) return
-      step(delta)
-    },
-    [step],
-  )
-
-  const hotkeys = useMemo(() => {
-    const bindings: Record<string, () => void> = {
-      Backspace: handleClear,
-      ArrowLeft: () => handleStep(-1),
-      ArrowRight: () => handleStep(1),
-    }
-    for (const option of SIMILARITY_OPTIONS) {
-      bindings[option.hotkey] = () => handleSelect(option.level)
-    }
-    return bindings
-  }, [handleClear, handleSelect, handleStep])
-
-  useHotkeys(hotkeys)
+  if (bootstrap.status === 'loading') {
+    return <p className={styles.notice}>Loading pairs…</p>
+  }
+  if (bootstrap.status === 'error') {
+    // A non-401 failure (server down, CORS, offline) leaves a valid token in
+    // place, so the gate needs an explicit way back rather than a dead end.
+    return (
+      <div className={styles.notice}>
+        <p>Could not load the session: {bootstrap.message}</p>
+        <button type="button" className={styles.retry} onClick={onSignOut}>
+          Use a different token
+        </button>
+      </div>
+    )
+  }
 
   return (
-    <div className={styles.app}>
-      <header className={styles.header}>
-        <p className={styles.wordmark}>cxr-labeller</p>
-        <div className={styles.progress}>
-          <ProgressTrack
-            pairs={MOCK_PAIRS}
-            levelByPairId={session.levelByPairId}
-            cursor={session.cursor}
-            disabled={committing !== null}
-            onSelect={handleJump}
-          />
-        </div>
-        <p className={styles.session} aria-live="polite">
-          {session.done} / {session.total}
-        </p>
-      </header>
+    <RatingApp
+      client={client}
+      reviewer={bootstrap.reviewer}
+      pairs={bootstrap.pairs}
+      judgements={bootstrap.judgements}
+      onUnauthorized={onUnauthorized}
+    />
+  )
+}
 
-      <main className={styles.main}>
-        {current ? (
-          <>
-            <RatingArena
-              key={current.id}
-              pair={current}
-              exiting={committing !== null}
-            />
-            <SimilarityScale
-              selected={committing ?? session.currentLevel}
-              disabled={committing !== null}
-              onSelect={handleSelect}
-            />
-            <ClearButton
-              hasRating={session.currentLevel !== null}
-              disabled={committing !== null}
-              onClear={handleClear}
-            />
-          </>
-        ) : (
-          <SessionComplete
-            judgements={session.judgements}
-            onReset={session.reset}
-          />
-        )}
-      </main>
-    </div>
+function App() {
+  const [token, setToken] = useState<string | null>(loadToken)
+  const [rejected, setRejected] = useState(false)
+
+  const onUnauthorized = useCallback(() => {
+    clearToken()
+    setToken(null)
+    setRejected(true)
+  }, [])
+
+  const onSignOut = useCallback(() => {
+    clearToken()
+    setToken(null)
+    setRejected(false)
+  }, [])
+
+  const onSubmit = useCallback((value: string) => {
+    saveToken(value)
+    setRejected(false)
+    setToken(value)
+  }, [])
+
+  if (token === null) {
+    return (
+      <TokenGate
+        message={rejected ? 'That token was rejected. Try another.' : null}
+        onSubmit={onSubmit}
+      />
+    )
+  }
+
+  // Remount on token change so a new reviewer never inherits the previous
+  // reviewer's loaded session.
+  return (
+    <Session
+      key={token}
+      token={token}
+      onUnauthorized={onUnauthorized}
+      onSignOut={onSignOut}
+    />
   )
 }
 

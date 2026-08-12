@@ -1,60 +1,49 @@
 import { SIMILARITY_OPTIONS } from '../data/similarityLevels.ts'
-import type { Judgement, Pair } from '../types.ts'
+import type { SimilarityLevel } from '../types.ts'
 
-const STORAGE_KEY = 'cxr-labeller.session.v1'
+const PENDING_KEY = 'cxr-labeller.pending.v1'
 
 const LEVELS = new Set<string>(SIMILARITY_OPTIONS.map((option) => option.level))
 
-function isJudgement(value: unknown): value is Judgement {
-  if (typeof value !== 'object' || value === null) return false
-  const entry = value as Record<string, unknown>
-  return (
-    typeof entry.pairId === 'string' &&
-    typeof entry.ratedAt === 'string' &&
-    typeof entry.level === 'string' &&
-    LEVELS.has(entry.level)
-  )
-}
-
 /**
- * Restores judgements for pairs still present in the queue, keeping the stored
- * order (oldest rating first) so undo pops the most recent one. Entries for
- * pairs the queue no longer contains, and duplicates, are dropped.
+ * Writes not yet accepted by the server, keyed by pair id. A null level is a
+ * pending delete. The server is the source of truth for ratings; this is only
+ * the outbound buffer that survives a reload or a flight-mode session.
  */
-export function loadJudgements(pairs: Pair[]): Judgement[] {
+export type PendingWrites = Record<string, SimilarityLevel | null>
+
+export function loadPending(): PendingWrites {
   let raw: string | null = null
   try {
-    raw = localStorage.getItem(STORAGE_KEY)
+    raw = localStorage.getItem(PENDING_KEY)
   } catch {
-    return []
+    return {}
   }
-  if (!raw) return []
+  if (!raw) return {}
 
   let parsed: unknown
   try {
     parsed = JSON.parse(raw)
   } catch {
-    return []
+    return {}
   }
-  if (!Array.isArray(parsed)) return []
+  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+    return {}
+  }
 
-  const queued = new Set(pairs.map((pair) => pair.id))
-  const seen = new Set<string>()
-  const restored: Judgement[] = []
-
-  for (const entry of parsed) {
-    if (!isJudgement(entry)) continue
-    if (!queued.has(entry.pairId) || seen.has(entry.pairId)) continue
-    seen.add(entry.pairId)
-    restored.push(entry)
+  const restored: PendingWrites = {}
+  for (const [pairId, level] of Object.entries(parsed)) {
+    if (level === null || (typeof level === 'string' && LEVELS.has(level))) {
+      restored[pairId] = level as SimilarityLevel | null
+    }
   }
   return restored
 }
 
-export function saveJudgements(judgements: Judgement[]): void {
+export function savePending(pending: PendingWrites): void {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(judgements))
+    localStorage.setItem(PENDING_KEY, JSON.stringify(pending))
   } catch {
-    // Storage full or blocked; the session still works in memory.
+    // Storage full or blocked; writes still flush from memory.
   }
 }
