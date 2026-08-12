@@ -1,4 +1,4 @@
-.undo {
+.button {
   align-self: center;
   display: flex;
   align-items: center;
@@ -16,17 +16,13 @@
     border-color var(--dur-fast) var(--ease);
 }
 
-.undo:hover:not(:disabled) {
+.button:hover:not(:disabled) {
   color: var(--text);
   border-color: var(--border);
 }
 
-.undo:disabled {
+.button:disabled {
   opacity: 0;
   cursor: default;
   pointer-events: none;
-}
-
-.target {
-  font-weight: 600;
 }

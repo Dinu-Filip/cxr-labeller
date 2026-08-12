@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { ClearButton } from './components/ClearButton.tsx'
 import { ProgressTrack } from './components/ProgressTrack.tsx'
 import { RatingArena } from './components/RatingArena.tsx'
 import { SessionComplete } from './components/SessionComplete.tsx'
 import { SimilarityScale } from './components/SimilarityScale.tsx'
-import { UndoButton } from './components/UndoButton.tsx'
 import { MOCK_PAIRS } from './data/mockPairs.ts'
 import { SIMILARITY_OPTIONS } from './data/similarityLevels.ts'
 import { useHotkeys } from './hooks/useHotkeys.ts'
@@ -28,7 +28,7 @@ function App() {
     }
   }, [])
 
-  const { current, rate, undo, goTo, step } = session
+  const { current, rate, clearCurrent, goTo, step } = session
 
   const handleSelect = useCallback(
     (level: SimilarityLevel) => {
@@ -46,10 +46,10 @@ function App() {
     [current, rate],
   )
 
-  const handleUndo = useCallback(() => {
+  const handleClear = useCallback(() => {
     if (timer.current !== null) return
-    undo()
-  }, [undo])
+    clearCurrent()
+  }, [clearCurrent])
 
   const handleJump = useCallback(
     (index: number) => {
@@ -69,7 +69,7 @@ function App() {
 
   const hotkeys = useMemo(() => {
     const bindings: Record<string, () => void> = {
-      Backspace: handleUndo,
+      Backspace: handleClear,
       ArrowLeft: () => handleStep(-1),
       ArrowRight: () => handleStep(1),
     }
@@ -77,7 +77,7 @@ function App() {
       bindings[option.hotkey] = () => handleSelect(option.level)
     }
     return bindings
-  }, [handleSelect, handleStep, handleUndo])
+  }, [handleClear, handleSelect, handleStep])
 
   useHotkeys(hotkeys)
 
@@ -112,10 +112,10 @@ function App() {
               disabled={committing !== null}
               onSelect={handleSelect}
             />
-            <UndoButton
-              previous={session.previous}
+            <ClearButton
+              hasRating={session.currentLevel !== null}
               disabled={committing !== null}
-              onUndo={handleUndo}
+              onClear={handleClear}
             />
           </>
         ) : (
