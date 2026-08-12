@@ -139,7 +139,9 @@ def list_primitives(
 
 @app.get("/pairs", response_model=list[PairOut])
 def next_pairs(
-    limit: int = Query(default=50, ge=1, le=500),
+    # High enough for the whole matrix: the menu heatmap needs every pair
+    # loaded, and C(n,2) passes 500 at 32 primitives.
+    limit: int = Query(default=50, ge=1, le=10000),
     reviewer: Reviewer = Depends(current_reviewer),
     db: Session = Depends(get_db),
 ):

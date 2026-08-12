@@ -9,6 +9,7 @@ export type Bootstrap =
   | {
       status: 'ready'
       reviewer: Reviewer
+      primitives: Primitive[]
       pairs: Pair[]
       judgements: Judgement[]
     }
@@ -23,11 +24,27 @@ function pairFromId(
   return a && b ? { id: pairId, a, b } : null
 }
 
+/** Every unordered combination, canonically ordered, in stable id order. */
+function allCombinations(primitives: Primitive[]): Pair[] {
+  const sorted = [...primitives].sort((a, b) => a.id - b.id)
+  const pairs: Pair[] = []
+  for (let i = 0; i < sorted.length; i++) {
+    for (let j = i + 1; j < sorted.length; j++) {
+      pairs.push({ id: `${sorted[i].id}-${sorted[j].id}`, a: sorted[i], b: sorted[j] })
+    }
+  }
+  return pairs
+}
+
 /**
- * Loads the session from the server. Already-rated pairs are reconstructed from
- * the primitive list and placed ahead of the unrated queue, so the progress
- * track shows a reviewer's whole history and they can navigate back into it —
- * /pairs alone only returns what is still outstanding.
+ * Loads the session from the server, as the complete C(n,2) matrix in three
+ * bands: pairs already rated, then the server's unrated queue in its
+ * coverage-first order, then any combination neither covered.
+ *
+ * The third band makes completeness structural rather than dependent on the
+ * /pairs limit — the menu heatmap needs every cell to resolve to a loaded pair.
+ * It is normally empty; entries only appear if /pairs was truncated, and those
+ * fall back to plain id order.
  */
 export function useBootstrap(
   client: ApiClient,
@@ -65,10 +82,17 @@ export function useBootstrap(
             pairs.push(pair)
           }
         }
+        for (const pair of allCombinations(primitives)) {
+          if (!seen.has(pair.id)) {
+            seen.add(pair.id)
+            pairs.push(pair)
+          }
+        }
 
         setState({
           status: 'ready',
           reviewer,
+          primitives,
           pairs,
           judgements: ratings.filter((judgement) => seen.has(judgement.pairId)),
         })

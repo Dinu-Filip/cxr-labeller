@@ -74,3 +74,26 @@
   justify-content: center;
   gap: 10px 12px;
 }
+
+.exit {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-btn);
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    color var(--dur-fast) var(--ease),
+    border-color var(--dur-fast) var(--ease);
+}
+
+.exit:hover {
+  color: var(--text);
+  border-color: var(--sim-clear);
+}

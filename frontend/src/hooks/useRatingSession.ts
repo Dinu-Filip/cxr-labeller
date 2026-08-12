@@ -17,6 +17,8 @@ export type RatingSession = {
   /** Drops the rating on the pair under the cursor, leaving the cursor put. */
   clearCurrent: () => void
   goTo: (index: number) => void
+  /** Jumps to the first unrated pair, wherever the cursor happens to be. */
+  goToFrontier: () => void
   step: (delta: number) => void
 }
 
@@ -109,6 +111,13 @@ export function useRatingSession(
     [pairs],
   )
 
+  const goToFrontier = useCallback(() => {
+    setState((prev) => ({
+      ...prev,
+      cursor: nextUnrated(pairs, ratedIds(prev.judgements), 0),
+    }))
+  }, [pairs])
+
   const step = useCallback(
     (delta: number) => {
       setState((prev) => {
@@ -144,6 +153,7 @@ export function useRatingSession(
     rate,
     clearCurrent,
     goTo,
+    goToFrontier,
     step,
   }
 }

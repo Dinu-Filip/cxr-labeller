@@ -113,23 +113,6 @@
   white-space: nowrap;
 }
 
-.doughnut {
-  flex: 0 0 auto;
-  width: 22px;
-  height: 22px;
-}
-
-.doughnutTrack {
-  stroke: var(--border);
-  stroke-width: 4;
-}
-
-.doughnutValue {
-  stroke: var(--sim-clear);
-  stroke-width: 4;
-  transition: stroke-dasharray var(--dur-med) var(--ease);
-}
-
 .srOnly {
   position: absolute;
   width: 1px;

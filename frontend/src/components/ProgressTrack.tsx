@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { SIMILARITY_OPTIONS } from '../data/similarityLevels.ts'
 import type { Pair, SimilarityLevel } from '../types.ts'
+import { Doughnut } from './Doughnut.tsx'
 import styles from './ProgressTrack.module.css'
 
 type Props = {
@@ -25,39 +26,6 @@ const clamp = (value: number, min: number, max: number) =>
     boundaries the arrows step between. */
 function pageFor(focus: number, maxOffset: number): number {
   return clamp(Math.floor(focus / WINDOW) * WINDOW, 0, maxOffset)
-}
-
-const RADIUS = 8
-const CIRCUMFERENCE = 2 * Math.PI * RADIUS
-
-function Doughnut({ done, total }: { done: number; total: number }) {
-  const fraction = total === 0 ? 0 : done / total
-  return (
-    <svg
-      className={styles.doughnut}
-      viewBox="0 0 22 22"
-      role="img"
-      aria-label={`${done} of ${total} pairs rated`}
-    >
-      <circle
-        className={styles.doughnutTrack}
-        cx="11"
-        cy="11"
-        r={RADIUS}
-        fill="none"
-      />
-      <circle
-        className={styles.doughnutValue}
-        cx="11"
-        cy="11"
-        r={RADIUS}
-        fill="none"
-        strokeDasharray={`${CIRCUMFERENCE * fraction} ${CIRCUMFERENCE}`}
-        strokeLinecap={done > 0 ? 'round' : 'butt'}
-        transform="rotate(-90 11 11)"
-      />
-    </svg>
-  )
 }
 
 export function ProgressTrack({

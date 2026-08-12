@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import type { ApiClient, Reviewer } from '../api/client.ts'
+import type { Reviewer } from '../api/client.ts'
 import { SIMILARITY_OPTIONS } from '../data/similarityLevels.ts'
 import { useHotkeys } from '../hooks/useHotkeys.ts'
-import { useRatingSession } from '../hooks/useRatingSession.ts'
-import { useSyncQueue } from '../hooks/useSyncQueue.ts'
+import type { RatingSession } from '../hooks/useRatingSession.ts'
+import type { SyncQueue } from '../hooks/useSyncQueue.ts'
 import { prefersReducedMotion } from '../lib/motion.ts'
-import type { Judgement, Pair, SimilarityLevel } from '../types.ts'
+import type { Pair, SimilarityLevel } from '../types.ts'
 import { ClearButton } from './ClearButton.tsx'
 import { NavButton } from './NavButton.tsx'
 import { ProgressTrack } from './ProgressTrack.tsx'
@@ -19,22 +19,14 @@ import styles from '../App.module.css'
 const COMMIT_MS = 200
 
 type Props = {
-  client: ApiClient
   reviewer: Reviewer
   pairs: Pair[]
-  judgements: Judgement[]
-  onUnauthorized: () => void
+  session: RatingSession
+  sync: SyncQueue
+  onExit: () => void
 }
 
-export function RatingApp({
-  client,
-  reviewer,
-  pairs,
-  judgements,
-  onUnauthorized,
-}: Props) {
-  const session = useRatingSession(pairs, judgements)
-  const sync = useSyncQueue(client, onUnauthorized)
+export function RatingApp({ reviewer, pairs, session, sync, onExit }: Props) {
   // Non-null while a rating is animating out; also locks input so a fast
   // double-tap cannot rate two pairs with one intent.
   const [committing, setCommitting] = useState<SimilarityLevel | null>(null)
@@ -110,6 +102,9 @@ export function RatingApp({
   return (
     <div className={styles.app}>
       <header className={styles.header}>
+        <button type="button" className={styles.exit} onClick={onExit}>
+          <span aria-hidden="true">‹</span> Menu
+        </button>
         <p className={styles.wordmark}>{reviewer.name}</p>
         <div className={styles.progress}>
           <ProgressTrack

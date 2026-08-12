@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 import { createClient } from './api/client.ts'
-import { RatingApp } from './components/RatingApp.tsx'
+import { Workspace } from './components/Workspace.tsx'
 import { TokenGate } from './components/TokenGate.tsx'
 import { useBootstrap } from './hooks/useBootstrap.ts'
 import { clearToken, loadToken, saveToken } from './lib/token.ts'
@@ -35,9 +35,10 @@ function Session({
   }
 
   return (
-    <RatingApp
+    <Workspace
       client={client}
       reviewer={bootstrap.reviewer}
+      primitives={bootstrap.primitives}
       pairs={bootstrap.pairs}
       judgements={bootstrap.judgements}
       onUnauthorized={onUnauthorized}

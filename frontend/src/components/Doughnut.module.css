@@ -1,0 +1,14 @@
+.doughnut {
+  flex: 0 0 auto;
+}
+
+.track {
+  stroke: var(--border);
+  stroke-width: 4;
+}
+
+.value {
+  stroke: var(--sim-clear);
+  stroke-width: 4;
+  transition: stroke-dasharray var(--dur-med) var(--ease);
+}

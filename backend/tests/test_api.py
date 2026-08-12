@@ -68,7 +68,7 @@ def test_pairs_shape_matches_frontend_contract(client, alice):
 
 def test_pairs_limit_is_bounded(client, alice):
     assert client.get("/pairs?limit=0", headers=alice).status_code == 422
-    assert client.get("/pairs?limit=501", headers=alice).status_code == 422
+    assert client.get("/pairs?limit=10001", headers=alice).status_code == 422
 
 
 def test_rating_is_created_then_updated_in_place(client, seeded, alice):
