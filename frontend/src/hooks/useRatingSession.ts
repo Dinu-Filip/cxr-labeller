@@ -11,6 +11,8 @@ export type RatingSession = {
   levelByPairId: Map<string, SimilarityLevel>
   done: number
   total: number
+  canStepBack: boolean
+  canStepForward: boolean
   rate: (level: SimilarityLevel) => void
   /** Drops the rating on the pair under the cursor, leaving the cursor put. */
   clearCurrent: () => void
@@ -37,6 +39,14 @@ function nextUnrated(pairs: Pair[], rated: Set<string>, from: number): number {
     if (!rated.has(pairs[i].id)) return i
   }
   return pairs.length
+}
+
+/**
+ * Highest cursor `step` will move to. The past-the-end slot is the completion
+ * screen, so it only opens up once nothing is left unrated.
+ */
+function stepLimit(judgementCount: number, total: number): number {
+  return judgementCount === total ? total : total - 1
 }
 
 const ratedIds = (judgements: Judgement[]) =>
@@ -102,12 +112,7 @@ export function useRatingSession(
   const step = useCallback(
     (delta: number) => {
       setState((prev) => {
-        // The past-the-end slot is the completion screen, so it is only
-        // reachable once nothing is left unrated.
-        const limit =
-          prev.judgements.length === pairs.length
-            ? pairs.length
-            : pairs.length - 1
+        const limit = stepLimit(prev.judgements.length, pairs.length)
         const next = Math.min(Math.max(prev.cursor + delta, 0), limit)
         return next === prev.cursor ? prev : { ...prev, cursor: next }
       })
@@ -133,6 +138,9 @@ export function useRatingSession(
     levelByPairId,
     done: state.judgements.length,
     total: pairs.length,
+    canStepBack: state.cursor > 0,
+    canStepForward:
+      state.cursor < stepLimit(state.judgements.length, pairs.length),
     rate,
     clearCurrent,
     goTo,

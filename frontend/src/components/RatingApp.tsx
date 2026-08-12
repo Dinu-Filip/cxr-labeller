@@ -7,6 +7,7 @@ import { useSyncQueue } from '../hooks/useSyncQueue.ts'
 import { prefersReducedMotion } from '../lib/motion.ts'
 import type { Judgement, Pair, SimilarityLevel } from '../types.ts'
 import { ClearButton } from './ClearButton.tsx'
+import { NavButton } from './NavButton.tsx'
 import { ProgressTrack } from './ProgressTrack.tsx'
 import { RatingArena } from './RatingArena.tsx'
 import { SessionComplete } from './SessionComplete.tsx'
@@ -138,16 +139,31 @@ export function RatingApp({
               disabled={committing !== null}
               onSelect={handleSelect}
             />
-            <ClearButton
-              hasRating={session.currentLevel !== null}
-              disabled={committing !== null}
-              onClear={handleClear}
-            />
           </>
         ) : (
           <SessionComplete judgements={session.judgements} onReset={null} />
         )}
       </main>
+
+      {current ? (
+        <div className={styles.footer}>
+          <NavButton
+            direction="back"
+            disabled={committing !== null || !session.canStepBack}
+            onTrigger={() => handleStep(-1)}
+          />
+          <ClearButton
+            hasRating={session.currentLevel !== null}
+            disabled={committing !== null}
+            onClear={handleClear}
+          />
+          <NavButton
+            direction="forward"
+            disabled={committing !== null || !session.canStepForward}
+            onTrigger={() => handleStep(1)}
+          />
+        </div>
+      ) : null}
     </div>
   )
 }

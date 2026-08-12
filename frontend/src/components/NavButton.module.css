@@ -1,0 +1,52 @@
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-btn);
+  box-shadow: var(--shadow-btn);
+  color: var(--text);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color var(--dur-fast) var(--ease),
+    border-color var(--dur-fast) var(--ease),
+    transform var(--dur-fast) var(--ease);
+}
+
+.nav:hover:not(:disabled) {
+  background: var(--surface-hover);
+  border-color: var(--sim-clear);
+}
+
+.nav:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+/* Dimmed rather than hidden: the pair of buttons should keep its shape at the
+   ends of the queue instead of the row jumping around. */
+.nav:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.glyph {
+  font-size: 1.125rem;
+  line-height: 1;
+}
+
+.hint {
+  display: grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 4px;
+  border-radius: 5px;
+  background: color-mix(in srgb, currentColor 12%, transparent);
+  border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
