@@ -15,7 +15,7 @@ export function ClearButton({ hasRating, disabled, onClear }: Props) {
       onClick={onClear}
     >
       <span aria-hidden="true">↩</span>
-      Clear rating
+      Clear and go back
       <kbd>Backspace</kbd>
     </button>
   )

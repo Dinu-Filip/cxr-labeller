@@ -66,12 +66,15 @@ export function RatingApp({
     [current, enqueue, rate],
   )
 
+  // Clear whatever is on the current pair, then step back to the previous one.
   const handleClear = useCallback(() => {
-    if (timer.current !== null || !current) return
-    if (session.currentLevel === null) return
-    clearCurrent()
-    enqueue(current.id, null)
-  }, [clearCurrent, current, enqueue, session.currentLevel])
+    if (timer.current !== null) return
+    if (current && session.currentLevel !== null) {
+      clearCurrent()
+      enqueue(current.id, null)
+    }
+    step(-1)
+  }, [clearCurrent, current, enqueue, session.currentLevel, step])
 
   const handleJump = useCallback(
     (index: number) => {
