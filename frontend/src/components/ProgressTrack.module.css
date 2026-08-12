@@ -31,7 +31,9 @@
   display: block;
   height: 8px;
   border-radius: 999px;
-  background: var(--border);
+  /* Translucent so an unrated segment reads as empty next to any rating
+     colour, including the muted end of the ramp. */
+  background: color-mix(in srgb, var(--border) 50%, transparent);
   transition:
     background-color var(--dur-med) var(--ease),
     height var(--dur-fast) var(--ease),
@@ -44,7 +46,7 @@
 
 .rated .fill,
 .rated:hover:not(:disabled) .fill {
-  background: var(--sim-clear);
+  background: var(--tint);
 }
 
 .current .fill {
@@ -54,6 +56,23 @@
 
 .current:not(.rated) .fill {
   background: var(--text-muted);
+}
+
+/* Each rating paints its segment with that category's colour. */
+.clear {
+  --tint: var(--sim-clear);
+}
+
+.moderate {
+  --tint: var(--sim-moderate);
+}
+
+.weak {
+  --tint: var(--sim-weak);
+}
+
+.none {
+  --tint: var(--sim-none);
 }
 
 .slide {
@@ -83,4 +102,42 @@
 .slide:disabled {
   opacity: 0.3;
   cursor: default;
+}
+
+.range {
+  flex: 0 0 auto;
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.doughnut {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+}
+
+.doughnutTrack {
+  stroke: var(--border);
+  stroke-width: 4;
+}
+
+.doughnutValue {
+  stroke: var(--sim-clear);
+  stroke-width: 4;
+  transition: stroke-dasharray var(--dur-med) var(--ease);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }

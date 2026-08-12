@@ -27,6 +27,39 @@ function pageFor(focus: number, maxOffset: number): number {
   return clamp(Math.floor(focus / WINDOW) * WINDOW, 0, maxOffset)
 }
 
+const RADIUS = 8
+const CIRCUMFERENCE = 2 * Math.PI * RADIUS
+
+function Doughnut({ done, total }: { done: number; total: number }) {
+  const fraction = total === 0 ? 0 : done / total
+  return (
+    <svg
+      className={styles.doughnut}
+      viewBox="0 0 22 22"
+      role="img"
+      aria-label={`${done} of ${total} pairs rated`}
+    >
+      <circle
+        className={styles.doughnutTrack}
+        cx="11"
+        cy="11"
+        r={RADIUS}
+        fill="none"
+      />
+      <circle
+        className={styles.doughnutValue}
+        cx="11"
+        cy="11"
+        r={RADIUS}
+        fill="none"
+        strokeDasharray={`${CIRCUMFERENCE * fraction} ${CIRCUMFERENCE}`}
+        strokeLinecap={done > 0 ? 'round' : 'butt'}
+        transform="rotate(-90 11 11)"
+      />
+    </svg>
+  )
+}
+
 export function ProgressTrack({
   pairs,
   levelByPairId,
@@ -53,12 +86,13 @@ export function ProgressTrack({
   const windowed = maxOffset > 0
   const visible = Math.min(WINDOW, total)
   const done = levelByPairId.size
-  const label = windowed
-    ? `Jump to pair. ${done} of ${total} rated, showing ${offset + 1} to ${offset + visible}`
-    : `Jump to pair. ${done} of ${total} rated`
+  const first = total === 0 ? 0 : offset + 1
+  const last = offset + visible
 
   return (
     <div className={styles.wrap}>
+      <Doughnut done={done} total={total} />
+
       {windowed ? (
         <button
           type="button"
@@ -71,7 +105,11 @@ export function ProgressTrack({
         </button>
       ) : null}
 
-      <div className={styles.track} role="group" aria-label={label}>
+      <div
+        className={styles.track}
+        role="group"
+        aria-label={`Jump to pair. Showing ${first} to ${last} of ${total}`}
+      >
         {Array.from({ length: visible }, (_, slot) => {
           const index = offset + slot
           const pair = pairs[index]
@@ -82,7 +120,7 @@ export function ProgressTrack({
             <button
               key={pair.id}
               type="button"
-              className={`${styles.segment} ${level ? styles.rated : ''} ${
+              className={`${styles.segment} ${level ? `${styles.rated} ${styles[level]}` : ''} ${
                 index === cursor ? styles.current : ''
               }`}
               aria-label={`Pair ${index + 1}, ${pair.a.name} versus ${pair.b.name}, ${status}`}
@@ -107,6 +145,13 @@ export function ProgressTrack({
           <span aria-hidden="true">›</span>
         </button>
       ) : null}
+
+      <p className={styles.range}>
+        {first}&ndash;{last}
+      </p>
+      <span className={styles.srOnly} aria-live="polite">
+        {done} of {total} pairs rated
+      </span>
     </div>
   )
 }

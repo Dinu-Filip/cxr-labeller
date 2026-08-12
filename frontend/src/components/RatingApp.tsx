@@ -120,9 +120,6 @@ export function RatingApp({
             onSelect={handleJump}
           />
         </div>
-        <p className={styles.session} aria-live="polite">
-          {session.done} / {session.total}
-        </p>
         <SyncIndicator status={sync.status} pendingCount={sync.pendingCount} />
       </header>
 

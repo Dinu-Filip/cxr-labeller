@@ -12,15 +12,20 @@
   --text-muted: hsl(215 14% 46%);
   --focus: hsl(215 90% 52%);
 
-  /* Diverging ramp: the teal end is similarity, the amber pole is its absence.
-     Amber rather than a deeper grey so "not at all" cannot be mistaken for an
-     unrated segment in the progress track. Teal/amber also survives the common
-     red-green colour vision deficiencies. */
-  --sim-clear: hsl(174 72% 28%);
-  --sim-moderate: hsl(174 52% 38%);
-  --sim-weak: hsl(174 33% 52%);
-  --sim-none: hsl(28 80% 38%);
-  --sim-fg: hsl(0 0% 100%);
+  /* Diverging ramp: teal is similarity, amber its absence. Rungs are separated
+     by lightness within each hue family and by hue across them, so all four
+     stay distinct from one another and from an unrated track segment. Teal and
+     amber also survive the common red-green colour vision deficiencies.
+     Each rung carries its own foreground, because the ramp deliberately mixes
+     light and dark tints and a single fixed text colour cannot read on both. */
+  --sim-clear: hsl(176 74% 26%);
+  --sim-clear-fg: hsl(0 0% 100%);
+  --sim-moderate: hsl(162 52% 52%);
+  --sim-moderate-fg: hsl(215 35% 14%);
+  --sim-weak: hsl(40 86% 45%);
+  --sim-weak-fg: hsl(215 35% 14%);
+  --sim-none: hsl(12 74% 36%);
+  --sim-none-fg: hsl(0 0% 100%);
 
   --radius-card: 20px;
   --radius-btn: 14px;
@@ -45,11 +50,14 @@
     --text-muted: hsl(215 14% 66%);
     --focus: hsl(210 90% 66%);
 
-    --sim-clear: hsl(174 62% 42%);
-    --sim-moderate: hsl(174 44% 36%);
-    --sim-weak: hsl(174 26% 32%);
-    --sim-none: hsl(30 72% 40%);
-    --sim-fg: hsl(0 0% 100%);
+    --sim-clear: hsl(176 70% 34%);
+    --sim-clear-fg: hsl(215 32% 10%);
+    --sim-moderate: hsl(162 60% 60%);
+    --sim-moderate-fg: hsl(215 32% 10%);
+    --sim-weak: hsl(42 84% 64%);
+    --sim-weak-fg: hsl(215 32% 10%);
+    --sim-none: hsl(16 76% 42%);
+    --sim-none-fg: hsl(0 0% 100%);
 
     --shadow-card: 0 1px 2px hsl(0 0% 0% / 0.3), 0 12px 28px hsl(0 0% 0% / 0.35);
     --shadow-btn: 0 1px 2px hsl(0 0% 0% / 0.3);

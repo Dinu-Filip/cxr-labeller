@@ -44,7 +44,7 @@
 .submit {
   padding: 12px 18px;
   background: var(--sim-clear);
-  color: var(--sim-fg);
+  color: var(--sim-clear-fg);
   border: 1px solid var(--sim-clear);
   border-radius: var(--radius-btn);
   font-weight: 650;

@@ -56,7 +56,7 @@
 .selected:hover:not(:disabled) {
   background: var(--tint);
   border-color: var(--tint);
-  color: var(--sim-fg);
+  color: var(--tint-fg);
 }
 
 /* Unpicked options recede while the pick commits. */
@@ -90,18 +90,22 @@
 
 .clear {
   --tint: var(--sim-clear);
+  --tint-fg: var(--sim-clear-fg);
 }
 
 .moderate {
   --tint: var(--sim-moderate);
+  --tint-fg: var(--sim-moderate-fg);
 }
 
 .weak {
   --tint: var(--sim-weak);
+  --tint-fg: var(--sim-weak-fg);
 }
 
 .none {
   --tint: var(--sim-none);
+  --tint-fg: var(--sim-none-fg);
 }
 
 @media (min-width: 40rem) {
