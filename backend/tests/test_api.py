@@ -143,6 +143,60 @@ def test_delete_clears_only_the_current_reviewers_rating(client, alice, bob):
     assert len(client.get("/ratings", headers=bob).json()) == 1
 
 
+def test_three_reviewers_rate_the_same_pair_independently(client, alice, bob, carol):
+    levels = {"alice": "clear", "bob": "moderate", "carol": "none"}
+    for headers, name in [(alice, "alice"), (bob, "bob"), (carol, "carol")]:
+        assert (
+            client.put(
+                "/ratings/1-2", json={"level": levels[name]}, headers=headers
+            ).status_code
+            == 200
+        )
+
+    for headers, name in [(alice, "alice"), (bob, "bob"), (carol, "carol")]:
+        mine = client.get("/ratings", headers=headers).json()
+        assert [(row["pair_id"], row["level"]) for row in mine] == [
+            ("1-2", levels[name])
+        ]
+
+    # One reviewer withdrawing leaves the other two intact, not just the one.
+    assert client.delete("/ratings/1-2", headers=bob).status_code == 204
+    assert client.get("/ratings", headers=bob).json() == []
+    assert client.get("/ratings", headers=alice).json()[0]["level"] == "clear"
+    assert client.get("/ratings", headers=carol).json()[0]["level"] == "none"
+
+    rows = client.get(
+        "/export", headers={"Authorization": "Bearer test-admin-token"}
+    ).json()
+    assert {(row["reviewer_name"], row["level"]) for row in rows} == {
+        ("alice", "clear"),
+        ("carol", "none"),
+    }
+
+
+def test_me_counts_ignore_other_reviewers_writes(client, alice, bob, carol):
+    for headers in (bob, carol):
+        for raw_pair_id in ("1-2", "1-3", "1-4"):
+            client.put(
+                f"/ratings/{raw_pair_id}", json={"level": "clear"}, headers=headers
+            )
+
+    def progress(headers):
+        body = client.get("/me", headers=headers).json()
+        return body["rated"], body["remaining"], body["total_pairs"]
+
+    # Six pairs rated between the two of them, none of them Alice's.
+    assert progress(alice) == (0, 6, 6)
+
+    client.put("/ratings/1-2", json={"level": "weak"}, headers=alice)
+    assert progress(alice) == (1, 5, 6)
+    assert progress(bob) == (3, 3, 6)
+
+    client.delete("/ratings/1-2", headers=carol)
+    assert progress(alice) == (1, 5, 6)
+    assert progress(carol) == (2, 4, 6)
+
+
 def test_delete_missing_rating_is_404(client, alice):
     assert client.delete("/ratings/1-2", headers=alice).status_code == 404
 

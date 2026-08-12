@@ -55,6 +55,7 @@ def seeded(session):
         [
             Reviewer(id=1, name="alice", token_hash=hash_token("alice-token")),
             Reviewer(id=2, name="bob", token_hash=hash_token("bob-token")),
+            Reviewer(id=3, name="carol", token_hash=hash_token("carol-token")),
         ]
     )
     session.commit()
@@ -75,3 +76,8 @@ def alice():
 @pytest.fixture
 def bob():
     return {"Authorization": "Bearer bob-token"}
+
+
+@pytest.fixture
+def carol():
+    return {"Authorization": "Bearer carol-token"}

@@ -118,6 +118,37 @@ def test_unrated_pairs_prefers_least_covered(seeded):
     assert queue[0] == "3-4"
 
 
+def test_queue_orders_by_how_many_reviewers_covered_a_pair(seeded):
+    # Three coverage tiers, so this fails if the sort key ever collapses to
+    # "rated by somebody" instead of counting reviewers. Bob and Carol both rate
+    # 1-4; they take one pair each; three pairs are left untouched.
+    #
+    # 1-4 is the twice-covered pair deliberately: it leads Alice's tiebreak hash,
+    # so a sort key that stopped counting past one would pull it to the front of
+    # the covered pairs rather than leaving it last, and the assertions below
+    # would notice. Picking a late-hashing pair here would pass either way.
+    for reviewer_id, pairs in [(2, [(1, 4), (1, 2)]), (3, [(1, 4), (1, 3)])]:
+        for a, b in pairs:
+            seeded.add(
+                SimilarityRating(
+                    primitive_a_id=a,
+                    primitive_b_id=b,
+                    reviewer_id=reviewer_id,
+                    level="clear",
+                )
+            )
+    seeded.commit()
+
+    queue = [pair_id(a.id, b.id) for a, b in unrated_pairs(seeded, 1, 100)]
+
+    # Alice has rated nothing, so every pair is still offered to her — coverage
+    # only reorders the queue, it never removes work.
+    assert len(queue) == 6
+    assert set(queue[:3]) == {"2-3", "2-4", "3-4"}  # covered by nobody
+    assert set(queue[3:5]) == {"1-2", "1-3"}  # covered once
+    assert queue[5] == "1-4"  # covered twice
+
+
 def test_queue_order_is_stable_but_reviewer_specific(seeded):
     alice_queue = [pair_id(a.id, b.id) for a, b in unrated_pairs(seeded, 1, 100)]
     again = [pair_id(a.id, b.id) for a, b in unrated_pairs(seeded, 1, 100)]
