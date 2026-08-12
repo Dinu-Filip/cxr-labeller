@@ -1,4 +1,4 @@
-const TOKEN_KEY = 'cxr-labeller.token'
+const TOKEN_KEY = 'primitive-scorer.token'
 
 export function loadToken(): string | null {
   try {

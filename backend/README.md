@@ -1,4 +1,4 @@
-# cxr-labeller backend
+# primitive-scorer backend
 
 FastAPI backend for pairwise similarity rating of structural radiological
 primitives. Reviewers are identified by a bearer token; each reviewer records at

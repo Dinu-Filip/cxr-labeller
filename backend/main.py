@@ -26,7 +26,7 @@ from schemas import (
     RatingOut,
 )
 
-app = FastAPI(title="cxr-labeller backend")
+app = FastAPI(title="primitive-scorer backend")
 
 app.add_middleware(
     CORSMiddleware,

@@ -1,7 +1,7 @@
 import { SIMILARITY_OPTIONS } from '../data/similarityLevels.ts'
 import type { SimilarityLevel } from '../types.ts'
 
-const PENDING_KEY = 'cxr-labeller.pending.v1'
+const PENDING_KEY = 'primitive-scorer.pending.v1'
 
 const LEVELS = new Set<string>(SIMILARITY_OPTIONS.map((option) => option.level))
 

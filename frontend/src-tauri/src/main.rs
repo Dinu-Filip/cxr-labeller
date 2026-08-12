@@ -2,5 +2,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    cxr_labeller_lib::run()
+    primitive_scorer_lib::run()
 }

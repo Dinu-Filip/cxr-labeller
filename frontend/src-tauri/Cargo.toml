@@ -1,11 +1,11 @@
 [package]
-name = "cxr-labeller"
+name = "primitive-scorer"
 version = "0.1.0"
-description = "cxr-labeller desktop app"
+description = "primitive-scorer desktop app"
 edition = "2021"
 
 [lib]
-name = "cxr_labeller_lib"
+name = "primitive_scorer_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]

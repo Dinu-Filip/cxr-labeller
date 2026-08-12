@@ -78,7 +78,7 @@ wheels = [
 ]
 
 [[package]]
-name = "cxr-labeller-backend"
+name = "primitive-scorer-backend"
 version = "0.0.1"
 source = { virtual = "." }
 dependencies = [

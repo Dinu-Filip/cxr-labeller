@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "cxr-labeller",
+  "productName": "primitive-scorer",
   "version": "0.1.0",
-  "identifier": "com.cxrlabeller.app",
+  "identifier": "com.primitivescorer.app",
   "build": {
     "beforeDevCommand": "npm run dev",
     "beforeBuildCommand": "npm run build",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "cxr-labeller",
+        "title": "primitive-scorer",
         "width": 1000,
         "height": 700
       }

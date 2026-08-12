@@ -39,6 +39,6 @@ jobs:
         with:
           projectPath: frontend
           tagName: ${{ github.ref_name }}
-          releaseName: cxr-labeller ${{ github.ref_name }}
+          releaseName: primitive-scorer ${{ github.ref_name }}
           releaseDraft: false
           prerelease: false

@@ -8,7 +8,7 @@ sys.path.insert(0, str(BACKEND))
 
 # A file rather than :memory: — an in-memory SQLite database is per-connection,
 # so TestClient's worker thread would otherwise see an empty schema.
-_DB_FILE = Path(tempfile.gettempdir()) / "cxr-labeller-test.db"
+_DB_FILE = Path(tempfile.gettempdir()) / "primitive-scorer-test.db"
 _DB_FILE.unlink(missing_ok=True)
 
 # Both must be set before db.py builds its engine at import time.

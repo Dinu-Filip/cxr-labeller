@@ -1,4 +1,4 @@
-const SHUFFLE_KEY = 'cxr-labeller.shuffle'
+const SHUFFLE_KEY = 'primitive-scorer.shuffle'
 
 export function loadShuffle(): boolean {
   try {

@@ -19,7 +19,7 @@ export function TokenGate({ message, onSubmit }: Props) {
           if (trimmed) onSubmit(trimmed)
         }}
       >
-        <h1 className={styles.title}>cxr-labeller</h1>
+        <h1 className={styles.title}>primitive-scorer</h1>
         <p className={styles.hint}>
           Paste your reviewer token to start rating.
         </p>

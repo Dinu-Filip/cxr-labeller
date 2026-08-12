@@ -1,5 +1,5 @@
 {
-  description = "cxr-labeller dev shell (React + Vite frontend, Tauri v2 desktop shell)";
+  description = "primitive-scorer dev shell (React + Vite frontend, Tauri v2 desktop shell)";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -45,7 +45,7 @@
           ];
 
           shellHook = ''
-            echo "cxr-labeller dev shell"
+            echo "primitive-scorer dev shell"
             echo "  node:   $(node --version)"
             echo "  rustc:  $(rustc --version)"
             echo "  python: $(python3 --version)"

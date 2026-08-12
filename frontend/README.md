@@ -1,4 +1,4 @@
-# cxr-labeller frontend
+# primitive-scorer frontend
 
 React + TypeScript + Vite, wired up to also run as a desktop app via Tauri.
 
