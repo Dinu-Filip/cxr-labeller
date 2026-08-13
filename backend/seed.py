@@ -5,30 +5,53 @@ from sqlalchemy import select
 from db import SessionLocal
 from models import Primitive
 
-PRIMITIVES: list[tuple[str, str]] = [
-    ("Consolidation", "Homogeneous opacification of airspaces obscuring vessels."),
-    ("Ground-glass opacity", "Hazy increased attenuation with vessels still visible."),
-    ("Reticulation", "Network of fine linear opacities."),
-    ("Nodule", "Rounded opacity up to 3 cm."),
-    ("Mass", "Rounded opacity larger than 3 cm."),
-    ("Cavitation", "Gas-filled space within an area of consolidation or a nodule."),
-    ("Pleural effusion", "Fluid collection in the pleural space."),
-    ("Pneumothorax", "Gas in the pleural space with a visible lung edge."),
-    ("Atelectasis", "Volume loss with displacement of fissures or hila."),
-    ("Honeycombing", "Clustered cystic airspaces with thick walls."),
-    ("Interlobular septal thickening", "Thickened lines outlining secondary lobules."),
-    ("Air bronchogram", "Air-filled bronchi rendered visible by surrounding opacity."),
+# Order defines the heatmap axes and the default rating order, so it is grouped
+# by territory: airspace, interstitial, nodular, airway, lucency/volume, pleura,
+# vasculature, cardiac, mediastinum/hila, diaphragm and chest wall.
+PRIMITIVES: list[str] = [
+    "Consolidation",
+    "Air bronchogram",
+    "Airspace opacity (non-consolidative)",
+    "Cavitation",
+    "Reticular / linear opacity",
+    "Kerley line",
+    "Honeycombing",
+    "Micronodular (miliary) pattern",
+    "Pulmonary nodule / mass",
+    "Calcification",
+    "Bronchiectasis",
+    "Peribronchial cuffing",
+    "Increased lung lucency",
+    "Bulla/cyst",
+    "Volume loss",
+    "Pleural line",
+    "Pleural effusion",
+    "Pleural thickening",
+    "Vascular redistribution (cephalisation)",
+    "Peripheral vascular pruning / oligemia",
+    "Enlarged central pulmonary arteries",
+    "Enlarged cardiac silhouette",
+    "Narrow / small cardiac silhouette",
+    "Left atrial enlargement",
+    "Right atrial enlargement",
+    "Right ventricular enlargement",
+    "Water bottle sign",
+    "Mediastinal widening",
+    "Hilar nodal / mass enlargement",
+    "Contralateral mediastinal shift",
+    "Ipsilateral mediastinal shift",
+    "Hilar retraction / elevation",
+    "Flattened hemidiaphragm",
+    "Elevated hemidiaphragm",
+    "Widened intercostal spaces",
+    "Crowded intercostal spaces",
 ]
 
 
 def main() -> None:
     with SessionLocal() as db:
         existing = set(db.scalars(select(Primitive.name)).all())
-        added = [
-            Primitive(name=name, description=description)
-            for name, description in PRIMITIVES
-            if name not in existing
-        ]
+        added = [Primitive(name=name) for name in PRIMITIVES if name not in existing]
         db.add_all(added)
         db.commit()
         total = db.scalar(select(Primitive).order_by(Primitive.id.desc()))

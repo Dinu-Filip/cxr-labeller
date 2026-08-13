@@ -64,7 +64,10 @@ export function createClient(token: string) {
 
     primitives: () => request<Primitive[]>(token, '/primitives'),
 
-    pairs: (limit = 200) => request<Pair[]>(token, `/pairs?limit=${limit}`),
+    // Must exceed C(n,2) or the server's queue is truncated and the tail falls
+    // back to plain id order, quietly weakening the shuffle. 2000 covers 63
+    // primitives; the list is currently 36.
+    pairs: (limit = 2000) => request<Pair[]>(token, `/pairs?limit=${limit}`),
 
     ratings: async (): Promise<Judgement[]> => {
       const rows = await request<RatingResponse[]>(token, '/ratings')
